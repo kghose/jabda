@@ -18,6 +18,8 @@ def fetch_entries(c):
   return parse_entries(c.fetchall())
 
 def fetch_entries_by_year(c, year):
+  """Fetch all entries for the given year. I chose this as a good compromise
+  against fetching all the entries which was slowing things down due to markdown."""
   st = '%s-01-01' %(year)
   nd = '%s-12-31' %(year)
   print st,nd

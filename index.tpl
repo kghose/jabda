@@ -1,6 +1,7 @@
 %#template to generate a HTML table from a list of tuples (or list of lists, or tuple of tuples or ...)
 <html>
 <head>
+<title>PyLog: {{year}}</title>
 <style type="text/css">
 
 body {
@@ -24,8 +25,16 @@ body {
 }
 
 .year-pane {
+	align: center;
   width: 100%;
-  overflow: auto;	
+}
+
+.year-pane a:link {text-decoration: none}
+.year-pane a:hover {text-decoration: underline overline; color: red;}
+
+
+.entry {
+  width: 100%; /*dynamic with div size*/
 }
 
 .content {
@@ -59,17 +68,31 @@ body {
 </head>   
 <body>
 
+
 <div class='year-pane'>
+%size = 10/1.5**9
 %for this_year in range(int(year)-10,int(year)):
-<a href="/{{this_year}}">{{this_year}}</a>,
+<a href="/{{this_year}}"><font size="{{size}}px">{{this_year}}</font></a> 
+%size *= 1.5
 %end
 
 <span class='year'>{{year}}</span> 
 
+%size = 10
 %for this_year in range(int(year)+1,int(year)+11):
-<a href="/{{this_year}}">{{this_year}}</a>,
+<a href="/{{this_year}}"><font size="{{size}}px">{{this_year}}</font></a> 
+%size /= 1.5
 %end
 
+</div>
+
+<div class='content'>
+<p>New entry</p>
+<form action="/new" method="GET">
+<p><input type="text" name="title" class="entry" title="Entry title"></p>
+<p><textarea rows="10" wrap="virtual" name="body" class="entry"></textarea></p>
+<input type="submit" name="save" value="save">
+</form>
 </div>
 
 
