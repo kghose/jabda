@@ -75,7 +75,7 @@ body {
 
 <div style="float:left;">
 <a href="/help" title="Get help">?</a>
-<a href="/config" title="Advanced configuration">?</a>
+<a href="/config" title="Advanced configuration">C</a>
 </div>
 
 <div class='year-pane'>
