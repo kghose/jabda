@@ -2,9 +2,6 @@
 <html>
 <head>
 <title>PyLog: {{year}}</title>
-<link rel="stylesheet" type="text/css" href="anytime.css" />
-<script type="text/javascript" src="jquery.js"></script>
-<script type="text/javascript" src="anytime.js"></script>
 
 <style type="text/css">
 
@@ -90,24 +87,34 @@ body {
 
 </div>
 
+%if not edit:
 <div class='content'>
-<form action="/new" method="GET">
+<form action="/new" method="POST">
 <p><input type="text" name="title" class="entry" title="Entry title" autocomplete="off"></p>
 <p><textarea rows="10" wrap="virtual" name="body" class="entry" title="Text of entry"></textarea></p>
 <input type="submit" name="save" value="save">
 </form>
 </div>
-
-<script type="text/javascript">
-  AnyTime.picker( "date",
-      { format: "%W, %M %D in the Year %z %E", firstDOW: 1 } );
-</script>
+%end
 
 %for row in rows:
-<div class='content'>  	
+<div class="content">
+<a name="entry{{row['id']}}">
+%if edit==True and int(id)==int(row['id']):
+<div class='date'>{{row['date']}}</div>
+<form action="/save/{{year}}/{{id}}#entry{{id}}" method="POST">
+<p><input type="text" name="title" class="entry" title="Entry title" autocomplete="off" value="{{row['title']}}"></p>
+<p><textarea rows="10" wrap="virtual" name="body" class="entry" title="Text of entry">
+{{row['markup text']}}
+</textarea></p>
+<input type="submit" name="save" value="save">
+</form>
+%else:
   	<div class='date'>{{row['date']}}</div>
   	<div class='title'>{{row['title']}}</div>
   	<p>{{!row['body']}}</p>
+  	<div align="right"><a href="/edit/{{year}}/{{row['id']}}#entry{{row['id']}}">edit</a></div>
+%end
 </div>
 %end
 </body>

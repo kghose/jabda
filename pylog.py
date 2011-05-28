@@ -31,10 +31,12 @@ def fetch_entries_by_year(year):
 def parse_entries(rows_in):
   rows = []
   for this_row in rows_in:
-    new_row = {         
+    new_row = {
+      'id': this_row['id'],
       'date': this_row['date'],
       'title': this_row['title'],
-      'body': markdown.markdown(this_row['body'])}
+      'body': markdown.markdown(this_row['body']),
+      'markup text': this_row['body']}
     rows.append(new_row)
   return rows
 
@@ -42,24 +44,41 @@ def create_new_entry(entry):
   c, conn = get_cursor()
   c.execute("INSERT INTO entries (title,date,body) VALUES (?,?,?)", (entry['title'], datetime.datetime.now(), entry['body']))
   conn.commit()
+
+def save_entry(entry):
+  c, conn = get_cursor()
+  c.execute("UPDATE entries SET title = ?, body = ? WHERE id LIKE ?", (entry['title'], entry['body'], entry['id']))
+  conn.commit()
   
 @route('/')  
 @route('/:year')
-def index(year=str(datetime.date.today().year)):
+def index(year=str(datetime.date.today().year), edit=False, id=None):
 
+  print type(edit), type(id)
   rows = fetch_entries_by_year(year)
-  output = template('index', rows=rows, year=year)
+  output = template('index', rows=rows, year=year, edit=edit, id=id)
   return output
 
-
-@route('/new', method='GET')
+@route('/new', method='POST')
 def new_item():
 
-  title = request.GET.get('title', '').strip()
-  body = request.GET.get('body', '').strip()
+  title = request.POST.get('title', '').strip()
+  body = request.POST.get('body', '').strip()
   entry = {'title': title, 'body': body}
   create_new_entry(entry)  
   return index()
+
+@route('/edit/:year/:id')
+def edit_item(year=None,id=None):
+  return index(year,True,id)
+
+@route('/save/:year/:id', method='POST')
+def save_item(year=None,id=None):
+  title = request.POST.get('title', '').strip()
+  body = request.POST.get('body', '').strip()
+  entry = {'id': int(id), 'title': title, 'body': body}
+  save_entry(entry)
+  return index(year,False,id)
 
 
 def test_run():
