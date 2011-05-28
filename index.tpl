@@ -2,6 +2,10 @@
 <html>
 <head>
 <title>PyLog: {{year}}</title>
+<link rel="stylesheet" type="text/css" href="anytime.css" />
+<script type="text/javascript" src="jquery.js"></script>
+<script type="text/javascript" src="anytime.js"></script>
+
 <style type="text/css">
 
 body {
@@ -49,7 +53,7 @@ body {
 	padding-top:.1em;
 	padding-bottom:.1em;
 	margin: 1em auto;	
-  width: 15cm;
+  width: 12cm;
   text-align: left;
 	}
 
@@ -87,14 +91,17 @@ body {
 </div>
 
 <div class='content'>
-<p>New entry</p>
 <form action="/new" method="GET">
-<p><input type="text" name="title" class="entry" title="Entry title"></p>
-<p><textarea rows="10" wrap="virtual" name="body" class="entry"></textarea></p>
+<p><input type="text" name="title" class="entry" title="Entry title" autocomplete="off"></p>
+<p><textarea rows="10" wrap="virtual" name="body" class="entry" title="Text of entry"></textarea></p>
 <input type="submit" name="save" value="save">
 </form>
 </div>
 
+<script type="text/javascript">
+  AnyTime.picker( "date",
+      { format: "%W, %M %D in the Year %z %E", firstDOW: 1 } );
+</script>
 
 %for row in rows:
 <div class='content'>  	
