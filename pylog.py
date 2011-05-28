@@ -104,7 +104,7 @@ def save_item(year=None,id=None):
 # Configuration pages ---------------------------------------------------------
 def create_default_config_file():
   config.add_section('Basic')
-  config.set('Basic', 'dbname', 'pylog.sqlite3')
+  config.set('Basic', 'dbname', 'diary.sqlite3')
   config.set('Basic', 'host', 'localhost')
   config.set('Basic', 'port', '3010')
   
@@ -141,6 +141,8 @@ def select_database(newdbname='pylogdb.sqlite3'):
 def new_database(newdbname='pylogdb.sqlite3'):
   globals()['dbname']=newdbname
   create_database()
+  config.set('Basic', 'dbname', newdbname)
+  save_config()
   return index()
 
 @route('/quit')

@@ -4,7 +4,7 @@ framework.
 
 Making an application out of this:
 
-py2applet --make-setup pylog.py index.tpl
+py2applet --make-setup pylog.py index.tpl diary.sqlite3
 python setup.py py2app
 
 OR
