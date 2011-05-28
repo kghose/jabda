@@ -12,7 +12,6 @@ dbname = None
 
 def get_cursor():
   """Returns us a cursor and connection object to our database."""
-  print dbname
   conn = sqlite3.connect(dbname)
   conn.row_factory = sqlite3.Row
   c = conn.cursor()
@@ -72,7 +71,6 @@ def index(year=str(datetime.date.today().year), edit=False, id=None):
   If edit is False but id is an integer, scroll to that entry using an anchor.
   This is used to show us an entry we have just edited."""
 
-  print type(edit), type(id)
   rows = fetch_entries_by_year(year)
   output = template('index', rows=rows, year=year, edit=edit, id=id)
   return output
