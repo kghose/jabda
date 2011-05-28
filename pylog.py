@@ -101,7 +101,14 @@ def save_item(year=None,id=None):
   save_entry(entry)
   return index(year,False,id)
 
-# Configuration pages ---------------------------------------------------------
+@route('/quit')
+def quit_server():
+  """A bit extreme, but really the only thing that worked, including exit(0),
+  and SIGINT. Not needed if we use it from the command line or as a startup
+  server, but essential when we use it as an app."""
+  bottle.os._exit(0)  
+
+# Configuration helpers --------------------------------------------------------
 def create_default_config_file():
   config.add_section('Basic')
   config.set('Basic', 'dbname', 'diary.sqlite3')
@@ -129,7 +136,8 @@ def create_database():
   c, conn = get_cursor()
   c.execute('CREATE TABLE "entries" ("id" INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, "title" varchar(255), "date" datetime, "body" text, "place" varchar(255), "lat" decimal, "lon" decimal, "created_at" datetime, "updated_at" datetime)')
   conn.commit()
-  
+
+# Configuration pages ---------------------------------------------------------  
 @route('/selectdb/:newdbname')
 def select_database(newdbname='pylogdb.sqlite3'):
   globals()['dbname']=newdbname
@@ -144,13 +152,6 @@ def new_database(newdbname='pylogdb.sqlite3'):
   config.set('Basic', 'dbname', newdbname)
   save_config()
   return index()
-
-@route('/quit')
-def quit_server():
-  """A bit extreme, but really the only thing that worked, including exit(0),
-  and SIGINT. Not needed if we use it from the command line or as a startup
-  server, but essential when we use it as an app."""
-  bottle.os._exit(0)  
   
 def test_run():
   import profile

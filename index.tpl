@@ -64,11 +64,19 @@ body {
   font-weight: normal;
 	font-size: .8em;
 }
-		   
+
 </style>
 </head>   
 <body>
 
+<div style="float:right;">
+<a href="/quit" title="Quit the diary application">X</a>
+</div>
+
+<div style="float:left;">
+<a href="/help" title="Get help">?</a>
+<a href="/config" title="Advanced configuration">?</a>
+</div>
 
 <div class='year-pane'>
 %size = 10/1.5**9
