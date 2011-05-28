@@ -83,8 +83,8 @@ def index(year=str(datetime.date.today().year), edit=False, id=None):
 @route('/new', method='POST')
 def new_item():
 
-  title = request.POST.get('title', '').strip()
-  body = request.POST.get('body', '').strip()
+  title = unicode(request.POST.get('title', '').strip(),'utf_8')
+  body = unicode(request.POST.get('body', '').strip(),'utf_8')
   entry = {'title': title, 'body': body}
   create_new_entry(entry)  
   return index()
@@ -96,8 +96,9 @@ def edit_item(year=None,id=None):
 
 @route('/save/:year/:id', method='POST')
 def save_item(year=None,id=None):
-  title = request.POST.get('title', '').strip()
-  body = request.POST.get('body', '').strip()
+
+  title = unicode(request.POST.get('title', '').strip(),'utf_8')
+  body = unicode(request.POST.get('body', '').strip(),'utf_8')
   entry = {'id': int(id), 'title': title, 'body': body}
   save_entry(entry)
   return index(year,False,id)
