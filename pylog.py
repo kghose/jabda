@@ -144,6 +144,13 @@ def new_database(newdbname='pylogdb.sqlite3'):
   create_database()
   return index()
 
+@route('/quit')
+def quit_server():
+  """A bit extreme, but really the only thing that worked, including exit(0),
+  and SIGINT. Not needed if we use it from the command line or as a startup
+  server, but essential when we use it as an app."""
+  bottle.os._exit(0)  
+  
 def test_run():
   import profile
   profile.run(bottle.run(host='localhost', port=8080))
