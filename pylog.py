@@ -44,18 +44,23 @@ def parse_entries(rows_in):
       'date': this_row['date'],
       'title': this_row['title'],
       'body': markdown.markdown(this_row['body']),
-      'markup text': this_row['body']}
+      'markup text': this_row['body'],
+      'updated_at': this_row['updated_at']}
     rows.append(new_row)
   return rows
 
 def create_new_entry(entry):
   c, conn = get_cursor()
-  c.execute("INSERT INTO entries (title,date,body) VALUES (?,?,?)", (entry['title'], datetime.datetime.now(), entry['body']))
+  now = datetime.datetime.now()
+  c.execute("INSERT INTO entries (title,date,body,created_at,updated_at) VALUES (?,?,?,?,?)", 
+            (entry['title'], now, entry['body'], now, now))
   conn.commit()
 
 def save_entry(entry):
   c, conn = get_cursor()
-  c.execute("UPDATE entries SET title = ?, body = ? WHERE id LIKE ?", (entry['title'], entry['body'], entry['id']))
+  now = datetime.datetime.now()  
+  c.execute("UPDATE entries SET title = ?, body = ?, updated_at = ? WHERE id LIKE ?", 
+            (entry['title'], entry['body'], now, entry['id']))
   conn.commit()
 
 # Common use pages -------------------------------------------------------------

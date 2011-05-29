@@ -65,6 +65,11 @@ body {
 	font-size: .8em;
 }
 
+.lastupdated {
+  font-weight: bold;
+	font-size: .6em;
+}
+
 </style>
 </head>   
 <body>
@@ -109,19 +114,18 @@ body {
 <div class="content">
 <a name="entry{{row['id']}}">
 %if edit==True and int(id)==int(row['id']):
-<div class='date'>{{row['date']}}</div>
-<form action="/save/{{year}}/{{id}}#entry{{id}}" method="POST">
-<p><input type="text" name="title" class="entry" title="Entry title" autocomplete="off" value="{{row['title']}}"></p>
-<p><textarea rows="10" wrap="virtual" name="body" class="entry" title="Text of entry">
-{{row['markup text']}}
-</textarea></p>
-<input type="submit" name="save" value="save">
-</form>
+  <div class='date'>{{row['date']}}</div>
+  <form action="/save/{{year}}/{{id}}#entry{{id}}" method="POST">
+   <p><input type="text" name="title" class="entry" title="Entry title" autocomplete="off" value="{{row['title']}}"></p>
+   <p><textarea rows="10" wrap="virtual" name="body" class="entry" title="Text of entry">{{row['markup text']}}</textarea></p>
+   <input type="submit" name="save" value="save">
+  </form>
 %else:
-  	<div class='date'>{{row['date']}}</div>
-  	<div class='title'>{{row['title']}}</div>
-  	<p>{{!row['body']}}</p>
-  	<div align="right"><a href="/edit/{{year}}/{{row['id']}}#entry{{row['id']}}">edit</a></div>
+  <div class='date'>{{row['date']}}</div>
+  <div class='title'>{{row['title']}}</div>
+  <p>{{!row['body']}}</p>
+  <div align="right"><a href="/edit/{{year}}/{{row['id']}}#entry{{row['id']}}">edit</a></div>
+  <div class='lastupdated'>Last edited: {{row['updated_at']}}</div>
 %end
 </div>
 %end
