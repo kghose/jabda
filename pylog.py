@@ -46,7 +46,7 @@ def fetch_entries_by_search(text):
   year = '2011'
   st = '%s-01-01' %(year)
   nd = '%s-12-31' %(year)
-  c.execute("select * from entries where (date >= date(?) and date <= date(?)) order by date desc", (st,nd))
+  c.execute("SELECT * FROM entries WHERE (title LIKE ? OR body LIKE ?) order by date desc", ("%%%s%%" %text, "%%%s%%" %text))
   rows = c.fetchall()
   return parse_entries(rows)
 
@@ -129,12 +129,12 @@ def save_item(year=str(datetime.date.today().year),id=None):
   output = template('index', year=year, entry=entry, view='saved')  
   return output
 
-@route('/search:text')
+@route('/search')
 def search(text=''):
   """."""
-
+  text = unicode(request.GET.get('searchtext', '').strip(),'utf_8')
   rows = fetch_entries_by_search(text)
-  output = template('index', rows=rows, year=None, edit=False, id=None, search=text)
+  output = template('index', rows=rows, view='list', year=str(datetime.date.today().year))
   return output
 
 

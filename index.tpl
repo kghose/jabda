@@ -79,9 +79,9 @@ body {
 </div>
 
 <div style="position:absolute;top:3;left:5;">
-<span style="display:inline;><form action="/search" method="GET">
-<input type="text" name="searchtext" title="Search" autocomplete="on">
-</form></span>
+<form action="/search" method="GET" style="display:inline;">
+<input type="text" size=20 name="searchtext" title="Search" autocomplete="on">
+</form>
 <a href="/help" title="Get help">?</a>
 <a href="/config" title="Advanced configuration">C</a>
 </div>
