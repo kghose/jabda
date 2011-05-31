@@ -43,13 +43,10 @@ def fetch_entries_by_year(year):
 def fetch_entries_by_search(text):
   """Fetch all entries containing text."""
   c, conn = get_cursor()
-  year = '2011'
-  st = '%s-01-01' %(year)
-  nd = '%s-12-31' %(year)
   c.execute("SELECT * FROM entries WHERE (title LIKE ? OR body LIKE ?) order by date desc", ("%%%s%%" %text, "%%%s%%" %text))
   rows = c.fetchall()
   return parse_entries(rows)
-
+  
 def parse_entries(rows_in):
   """Given a list of row objects returned by a fetch, copy the data into a new
   dictionary after running each entry through the markdown parser."""
