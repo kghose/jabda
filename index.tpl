@@ -1,6 +1,6 @@
 <html>
 <head>
-<title>PyLog: {{year}}</title>
+<title>Diary</title>
 
 <style type="text/css">
 
@@ -29,7 +29,8 @@ body {
   width: 100%;
 }
 
-.year-pane a:link {text-decoration: none}
+.year-pane a:link {text-decoration: none; color: black;}
+.year-pane a:visited {text-decoration: none; color: black;}
 .year-pane a:hover {text-decoration: underline overline; color: red;}
 
 
@@ -73,11 +74,14 @@ body {
 </head>   
 <body>
 
-<div style="float:right;">
+<div style="position:absolute;top:3;right:5;">
 <a href="/quit" title="Quit the diary application">X</a>
 </div>
 
-<div style="float:left;">
+<div style="position:absolute;top:3;left:5;">
+<span style="display:inline;><form action="/search" method="GET">
+<input type="text" name="searchtext" title="Search" autocomplete="on">
+</form></span>
 <a href="/help" title="Get help">?</a>
 <a href="/config" title="Advanced configuration">C</a>
 </div>
@@ -89,7 +93,7 @@ body {
 %size *= 1.5
 %end
 
-<span class='year'>{{year}}</span> 
+<span class='year'><a href="/{{year}}">{{year}}</a></span> 
 
 %size = 10
 %for this_year in range(int(year)+1,int(year)+11):
@@ -99,7 +103,7 @@ body {
 
 </div>
 
-%if not edit:
+%if view=='list': #Show us the traditional list view
 <div class='content'>
 <form action="/new" method="POST">
 <p><input type="text" name="title" class="entry" title="Entry title" autocomplete="off"></p>
@@ -107,25 +111,32 @@ body {
 <input type="submit" name="save" value="save">
 </form>
 </div>
-%end
 
 %for row in rows:
 <div class="content">
-<a name="entry{{row['id']}}">
-%if edit==True and int(id)==int(row['id']):
-  <div class='date'>{{row['date']}}</div>
-  <form action="/save/{{year}}/{{id}}#entry{{id}}" method="POST">
-   <p><input type="text" name="title" class="entry" title="Entry title" autocomplete="off" value="{{row['title']}}"></p>
-   <p><textarea rows="10" wrap="virtual" name="body" class="entry" title="Text of entry">{{row['markup text']}}</textarea></p>
-   <input type="submit" name="save" value="save">
-  </form>
-%else:
   <div class='date'>{{row['date']}}</div>
   <div class='title'>{{row['title']}}</div>
   <p>{{!row['body']}}</p>
-  <div align="right"><a href="/edit/{{year}}/{{row['id']}}#entry{{row['id']}}">edit</a></div>
+  <div align="right"><a href="/edit/{{row['id']}}">edit</a></div>
   <div class='lastupdated'>Last edited: {{row['updated_at']}}</div>
+</div>
 %end
+
+%elif view=='edit': #Allow us to edit a single entry
+<div class="content">
+  <form action="/save/{{entry['id']}}" method="POST">
+   <p><input type="text" name="title" class="entry" title="Entry title" value="{{entry['title']}}"></p>
+   <p><textarea rows="10" wrap="virtual" name="body" class="entry" title="Text of entry">{{entry['markup text']}}</textarea></p>
+   <input type="submit" name="save" value="save">
+  </form>
+</div>
+%elif view=='saved': #Show us the edited entry only
+<div class="content">
+  <div class='date'>{{entry['date']}}</div>
+  <div class='title'>{{entry['title']}}</div>
+  <p>{{!entry['body']}}</p>
+  <div align="right"><a href="/edit/{{entry['id']}}">edit</a></div>
+  <div class='lastupdated'>Last edited: {{entry['updated_at']}}</div>
 </div>
 %end
 </body>

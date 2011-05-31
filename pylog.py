@@ -17,7 +17,13 @@ def get_cursor():
   c = conn.cursor()
   return c, conn
 
-def fetch_entries():
+def fetch_single_entry(id):
+  c, conn = get_cursor()
+  c.execute('SELECT * FROM entries WHERE id LIKE ?', (id,))
+  #return c.fetchall()
+  return parse_entries(c.fetchall())
+  
+def fetch_all_entries():
   """Not really used. Returns a list of all the entries in the diary."""
   c, conn = get_cursor()
   c.execute('select * from entries order by date desc')
@@ -33,7 +39,17 @@ def fetch_entries_by_year(year):
   c.execute("select * from entries where (date >= date(?) and date <= date(?)) order by date desc", (st,nd))
   rows = c.fetchall()
   return parse_entries(rows)
-  
+
+def fetch_entries_by_search(text):
+  """Fetch all entries containing text."""
+  c, conn = get_cursor()
+  year = '2011'
+  st = '%s-01-01' %(year)
+  nd = '%s-12-31' %(year)
+  c.execute("select * from entries where (date >= date(?) and date <= date(?)) order by date desc", (st,nd))
+  rows = c.fetchall()
+  return parse_entries(rows)
+
 def parse_entries(rows_in):
   """Given a list of row objects returned by a fetch, copy the data into a new
   dictionary after running each entry through the markdown parser."""
@@ -55,19 +71,23 @@ def create_new_entry(entry):
   c.execute("INSERT INTO entries (title,date,body,created_at,updated_at) VALUES (?,?,?,?,?)", 
             (entry['title'], now, entry['body'], now, now))
   conn.commit()
+  
 
 def save_entry(entry):
+  """We then refetch the saved entry so we can display it."""
   c, conn = get_cursor()
   now = datetime.datetime.now()  
   c.execute("UPDATE entries SET title = ?, body = ?, updated_at = ? WHERE id LIKE ?", 
             (entry['title'], entry['body'], now, entry['id']))
   conn.commit()
+  return fetch_single_entry(entry['id'])[0]
+
 
 # Common use pages -------------------------------------------------------------
   
 @route('/')  
 @route('/:year')
-def index(year=str(datetime.date.today().year), edit=False, id=None):
+def index(year=str(datetime.date.today().year), edit=False, id=None, search=None):
   """Main page serve function. 
   If edit is True and id has a integer value,
   instead of showing a form for a new entry at the top, setup a form for
@@ -77,7 +97,7 @@ def index(year=str(datetime.date.today().year), edit=False, id=None):
   This is used to show us an entry we have just edited."""
 
   rows = fetch_entries_by_year(year)
-  output = template('index', rows=rows, year=year, edit=edit, id=id)
+  output = template('index', rows=rows, year=year, view='list')
   return output
 
 #We use POST for creating/editing the entries because these operations have 
@@ -92,19 +112,31 @@ def new_item():
   create_new_entry(entry)  
   return index()
 
-@route('/edit/:year/:id')
-def edit_item(year=None,id=None):
+@route('/edit/:id')
+def edit_item(year=str(datetime.date.today().year),id=None):
   
-  return index(year,True,id)
+  entry = fetch_single_entry(id)[0]
+  output = template('index', year=year, entry=entry, view='edit')
+  return output
 
-@route('/save/:year/:id', method='POST')
-def save_item(year=None,id=None):
+@route('/save/:id', method='POST')
+def save_item(year=str(datetime.date.today().year),id=None):
 
   title = unicode(request.POST.get('title', '').strip(),'utf_8')
   body = unicode(request.POST.get('body', '').strip(),'utf_8')
   entry = {'id': int(id), 'title': title, 'body': body}
-  save_entry(entry)
-  return index(year,False,id)
+  entry = save_entry(entry)
+  output = template('index', year=year, entry=entry, view='saved')  
+  return output
+
+@route('/search:text')
+def search(text=''):
+  """."""
+
+  rows = fetch_entries_by_search(text)
+  output = template('index', rows=rows, year=None, edit=False, id=None, search=text)
+  return output
+
 
 @route('/quit')
 def quit_server():
