@@ -48,8 +48,8 @@ body {
   font-family:"Century Gothic";	
 	font-size: 12pt;
 	//background-color:#5ff;
-	border:thin;
-	border-style:solid;
+	//border:thin;
+	//border-style:solid;
 	-moz-border-radius: 1em;
 	padding-left:2em;
 	padding-right:2em;
@@ -58,7 +58,7 @@ body {
 	margin: 1em auto;	
   width: 12cm;
   text-align: left;
-  box-shadow: 10px 10px 5px #888;
+  //box-shadow: 10px 10px 5px #888;
 	}
 
 .title {
@@ -74,9 +74,14 @@ body {
 }
 
 .lastupdated {
+	text-align:right;
   font-weight: bold;
 	font-size: .6em;
 }
+.lastupdated a:link {color: black;}
+.lastupdated a:visited {color: black;}
+
+
 
 </style>
 </head>   
@@ -137,8 +142,9 @@ body {
   <div class='date'>{{row['date']}}</div>
   <div class='title'>{{row['title']}}</div>
   <p>{{!row['body']}}</p>
-  <div align="right"><a href="/edit/{{row['id']}}">edit</a></div>
-  <div class='lastupdated'>Last edited: {{row['updated_at']}}</div>
+  <div class='lastupdated'>
+  <a href="/edit/{{row['id']}}" title="click to edit">Last edited: {{row['updated_at']}}</a>
+  </div>
 </div>
 %end
 
