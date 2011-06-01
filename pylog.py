@@ -94,7 +94,7 @@ def index(year=str(datetime.date.today().year), edit=False, id=None, search=None
   This is used to show us an entry we have just edited."""
 
   rows = fetch_entries_by_year(year)
-  output = template('index', rows=rows, year=year, view='list')
+  output = template('index', rows=rows, year=year, title=year, view='list')
   return output
 
 #We use POST for creating/editing the entries because these operations have 
@@ -113,7 +113,7 @@ def new_item():
 def edit_item(year=str(datetime.date.today().year),id=None):
   
   entry = fetch_single_entry(id)[0]
-  output = template('index', year=year, entry=entry, view='edit')
+  output = template('index', year=year, entry=entry, title='Editing', view='edit')
   return output
 
 @route('/save/:id', method='POST')
@@ -123,7 +123,7 @@ def save_item(year=str(datetime.date.today().year),id=None):
   body = unicode(request.POST.get('body', '').strip(),'utf_8')
   entry = {'id': int(id), 'title': title, 'body': body}
   entry = save_entry(entry)
-  output = template('index', year=year, entry=entry, view='saved')  
+  output = template('index', year=year, entry=entry, title='Saved', view='saved')  
   return output
 
 @route('/search')
@@ -131,7 +131,7 @@ def search(text=''):
   """."""
   text = unicode(request.GET.get('searchtext', '').strip(),'utf_8')
   rows = fetch_entries_by_search(text)
-  output = template('index', rows=rows, view='list', year=str(datetime.date.today().year))
+  output = template('index', rows=rows, year=str(datetime.date.today().year), title='Searching for "%s"' %text, view='list')
   return output
 
 

@@ -25,8 +25,14 @@ body {
 }
 
 .year-pane {
-	align: center;
-  width: 100%;
+	position:absolute;
+	top:50px;
+	left:10%;
+	border:solid;
+	padding:5px;
+	-moz-border-radius: 1em;
+//	align: center;
+//  width: 100%;
 }
 
 .year-pane a:link {text-decoration: none; color: black;}
@@ -41,7 +47,7 @@ body {
 .content {
   font-family:"Century Gothic";	
 	font-size: 12pt;
-	background-color:#5ff;
+	//background-color:#5ff;
 	border:thin;
 	border-style:solid;
 	-moz-border-radius: 1em;
@@ -52,12 +58,14 @@ body {
 	margin: 1em auto;	
   width: 12cm;
   text-align: left;
+  box-shadow: 10px 10px 5px #888;
 	}
 
 .title {
 	width: 100%;
 	font-size:large;
 	font-weight: bold;
+	border-bottom: 1px dotted #ba0000;
 }
 
 .date {
@@ -79,13 +87,11 @@ body {
 </div>
 
 <div style="position:absolute;top:3;left:5;">
-<form action="/search" method="GET" style="display:inline;">
-<input type="text" size=20 name="searchtext" title="Search" autocomplete="on">
-</form>
 <a href="/help" title="Get help">?</a>
 <a href="/config" title="Advanced configuration">C</a>
 </div>
 
+<!--
 <div class='year-pane'>
 %size = 10/1.5**9
 %for this_year in range(int(year)-10,int(year)):
@@ -101,6 +107,20 @@ body {
 %size /= 1.5
 %end
 
+</div>
+-->
+
+<div class="year-pane">
+<form action="/search" method="GET">
+<input type="text" size=20 name="searchtext" title="Search" autocomplete="on">
+</form>
+%for this_year in range(int(year)-10,int(year)+11):
+<a href="/{{this_year}}">{{this_year}}</a><br/>
+%end
+</div>
+
+<div class='content'>
+<h1>{{title}}</h1>
 </div>
 
 %if view=='list': #Show us the traditional list view
