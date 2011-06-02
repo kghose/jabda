@@ -84,7 +84,7 @@ def save_entry(entry):
   
 @route('/')  
 @route('/:year')
-def index(year=str(datetime.date.today().year), edit=False, id=None, search=None):
+def index(year=str(datetime.date.today().year)):
   """Main page serve function. 
   If edit is True and id has a integer value,
   instead of showing a form for a new entry at the top, setup a form for
