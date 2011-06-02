@@ -46,11 +46,11 @@ body {
 
 .content {
   font-family:"Century Gothic";	
-	font-size: 12pt;
+	font-size: 11pt;
 	//background-color:#5ff;
 	//border:thin;
 	//border-style:solid;
-	-moz-border-radius: 1em;
+  //-moz-border-radius: 1em;
 	padding-left:2em;
 	padding-right:2em;
 	padding-top:.1em;
@@ -124,7 +124,7 @@ body {
 %end
 </div>
 
-<div class='content'>
+<div style="top:3;left:50%;">
 <h1>{{title}}</h1>
 </div>
 
