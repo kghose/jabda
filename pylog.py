@@ -50,11 +50,16 @@ def fetch_entries_by_search(text):
 def parse_entries(rows_in):
   """Given a list of row objects returned by a fetch, copy the data into a new
   dictionary after running each entry through the markdown parser."""
+  def nice_date(date):
+    nd = datetime.date(int(date[0:4]),int(date[5:7]),int(date[8:10]))
+    return nd.strftime('%a %b %d, %Y')
+  
   rows = []
   for this_row in rows_in:
     new_row = {
       'id': this_row['id'],
       'date': this_row['date'],
+      'nicedate': nice_date(this_row['date']),
       'title': this_row['title'],
       'body': markdown.markdown(this_row['body']),
       'markup text': this_row['body'],

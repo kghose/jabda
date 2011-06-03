@@ -141,7 +141,7 @@ body {
 %if view=='list': #Show us the traditional list view
 %for row in rows:
 <div class="content">
-  <div class='date'>{{row['date']}}</div>
+  <div class='date'>{{row['nicedate']}}</div>
   <div class='title'>{{row['title']}}</div>
   <p>{{!row['body']}}</p>
   <div class='lastupdated'>
