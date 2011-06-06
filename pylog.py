@@ -1,8 +1,7 @@
 import datetime
 import sqlite3
 import markdown2 as markdown
-#import discount
-#md = discount.Markdown
+md = markdown.markdown
 import bottle
 from bottle import route, debug, template, request, validate, send_file, error
 
@@ -61,7 +60,7 @@ def parse_entries(rows_in):
       'date': this_row['date'],
       'nicedate': nice_date(this_row['date']),
       'title': this_row['title'],
-      'body': markdown.markdown(this_row['body']),
+      'body': md(this_row['body']),
       'markup text': this_row['body'],
       'updated_at': this_row['updated_at']}
     rows.append(new_row)
@@ -144,7 +143,7 @@ def search(text=''):
   rows = fetch_entries_by_search(text)
   output = template('index', rows=rows, year=str(datetime.date.today().year), 
                     current_year=str(datetime.date.today().year),
-                    title='Searching for "%s"' %text, view='list')
+                    title='Searched for "%s. Found %d entries"' %(text,len(rows)), view='searchlist')
   return output
 
 

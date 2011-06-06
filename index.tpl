@@ -138,7 +138,13 @@ body {
 </div>
 %end
 
-%if view=='list': #Show us the traditional list view
+%if view=='searchlist':
+<div class="content">
+<b>{{title}}</b>
+</div>
+%end
+
+%if view=='list' or view=='searchlist': #Show us the traditional list view
 %for row in rows:
 <div class="content">
   <div class='date'>{{row['nicedate']}}</div>
