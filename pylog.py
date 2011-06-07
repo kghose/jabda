@@ -105,8 +105,8 @@ def index(year=str(datetime.date.today().year)):
   This is used to show us an entry we have just edited."""
 
   rows = fetch_entries_by_year(year)
-  output = template('index', rows=rows, year=year, 
-                    year_count=get_year_count_list(), 
+  output = template('index', rows=rows, 
+                    year=year, year_count=get_year_count_list(), 
                     title=year, view='list')
   return output
 
@@ -126,9 +126,9 @@ def new_item():
 def edit_item(year=str(datetime.date.today().year),id=None):
   
   entry = fetch_single_entry(id)[0]
-  output = template('index', year=year, entry=entry, title='Editing', 
-                    current_year=str(datetime.date.today().year),
-                    view='edit')
+  output = template('index', entry=entry, 
+                    year=year, year_count=get_year_count_list(), 
+                    title='Editing', view='edit')
   return output
 
 @route('/save/:id', method='POST')
@@ -139,9 +139,9 @@ def save_item(year=str(datetime.date.today().year),id=None):
   body = unicode(request.POST.get('body', '').strip(),'utf_8')
   entry = {'id': int(id), 'date': date, 'title': title, 'body': body}
   entry = save_entry(entry)
-  output = template('index', year=year, entry=entry, title='Saved', 
-                    current_year=str(datetime.date.today().year),
-                    view='saved')  
+  output = template('index', entry=entry, 
+                    year=year, year_count=get_year_count_list(),
+                    title='Saved', view='saved')  
   return output
 
 @route('/search')
@@ -149,9 +149,9 @@ def search(text=''):
   """."""
   text = unicode(request.GET.get('searchtext', '').strip(),'utf_8')
   rows = fetch_entries_by_search(text)
-  output = template('index', rows=rows, year=str(datetime.date.today().year), 
-                    current_year=str(datetime.date.today().year),
-                    title='Searched for "%s. Found %d entries"' %(text,len(rows)), view='searchlist')
+  output = template('index', rows=rows, 
+                    year=str(datetime.date.today().year), year_count=get_year_count_list(),
+                    title='Searched for "%s". Found %d entries' %(text,len(rows)), view='searchlist')
   return output
 
 
