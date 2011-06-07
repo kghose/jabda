@@ -25,13 +25,13 @@ body {
 }
 
 .year-pane {
-	position:fixed;
+	position:absolute;
 	top:10px;
 	left:10%;
 	border:solid;
 	padding:5px;
 	-moz-border-radius: 1em;
-//	align: center;
+	align: center;
 //  width: 100%;
 }
 
@@ -96,36 +96,15 @@ body {
 <a href="/config" title="Advanced configuration">C</a>
 </div>
 
-<!--
-<div class='year-pane'>
-%size = 10/1.5**9
-%for this_year in range(int(year)-10,int(year)):
-<a href="/{{this_year}}"><font size="{{size}}px">{{this_year}}</font></a> 
-%size *= 1.5
-%end
-
-<span class='year'><a href="/{{year}}">{{year}}</a></span> 
-
-%size = 10
-%for this_year in range(int(year)+1,int(year)+11):
-<a href="/{{this_year}}"><font size="{{size}}px">{{this_year}}</font></a> 
-%size /= 1.5
-%end
-
-</div>
--->
-
 <div class="year-pane">
 <form action="/search" method="GET">
 <input type="text" size=20 name="searchtext" title="Search" autocomplete="on">
 </form>
-%for this_year in range(min(int(year)+10,int(current_year)),int(year),-1):
-<a href="/{{this_year}}">{{this_year}}</a><br/>
+<table align="center">
+%for yc in year_count:
+<tr><td align="center"><a href="/{{yc['year']}}">{{yc['year']}}</a></td><td><font size="1px">({{yc['cnt']}})</font></td></tr>
 %end
-<a href="/{{year}}"><font size=+2>{{year}}</font></a><br/>
-%for this_year in range(int(year)-1,int(year)-11,-1):
-<a href="/{{this_year}}">{{this_year}}</a><br/>
-%end
+</table>
 </div>
 
 %if view=='list': #In the traditional list view we get the new entry box 

@@ -83,6 +83,13 @@ def save_entry(entry):
   conn.commit()
   return fetch_single_entry(entry['id'])[0]
 
+def get_year_count_list():
+  """Return a list of years that are in our database and the number of entries
+  in that year."""
+  c, conn = get_cursor()
+  c.execute("select strftime('%Y',date) as year, count(date) as cnt from entries group by year order by year desc")
+  rows = c.fetchall()
+  return rows
 
 # Common use pages -------------------------------------------------------------
   
@@ -99,7 +106,7 @@ def index(year=str(datetime.date.today().year)):
 
   rows = fetch_entries_by_year(year)
   output = template('index', rows=rows, year=year, 
-                    current_year=str(datetime.date.today().year), 
+                    year_count=get_year_count_list(), 
                     title=year, view='list')
   return output
 
