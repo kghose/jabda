@@ -207,10 +207,6 @@ def new_database(newdbname='pylogdb.sqlite3'):
   save_config()
   return index()
   
-def test_run():
-  import profile
-  profile.run(bottle.run(host='localhost', port=8080))
-
 if __name__ == "__main__":
   
   load_config()
@@ -219,7 +215,7 @@ if __name__ == "__main__":
   port = config.getint('Basic', 'port')
   relo = config.getboolean('Advanced', 'reloader')
   globals()['dbname'] = config.get('Basic','dbname')
-  debug(deb)  
+  debug(deb)
   bottle.run(host=host, port=port,reloader=relo)
   #bottle.run(host='localhost', port=8080)
   
