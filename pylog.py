@@ -78,8 +78,8 @@ def save_entry(entry):
   """We then refetch the saved entry so we can display it."""
   c, conn = get_cursor()
   now = datetime.datetime.now()  
-  c.execute("UPDATE entries SET title = ?, body = ?, updated_at = ? WHERE id LIKE ?", 
-            (entry['title'], entry['body'], now, entry['id']))
+  c.execute("UPDATE entries SET date = ?, title = ?, body = ?, updated_at = ? WHERE id LIKE ?", 
+            (entry['date'], entry['title'], entry['body'], now, entry['id']))
   conn.commit()
   return fetch_single_entry(entry['id'])[0]
 
@@ -127,9 +127,10 @@ def edit_item(year=str(datetime.date.today().year),id=None):
 @route('/save/:id', method='POST')
 def save_item(year=str(datetime.date.today().year),id=None):
 
+  date = request.POST.get('date', '').strip()
   title = unicode(request.POST.get('title', '').strip(),'utf_8')
   body = unicode(request.POST.get('body', '').strip(),'utf_8')
-  entry = {'id': int(id), 'title': title, 'body': body}
+  entry = {'id': int(id), 'date': date, 'title': title, 'body': body}
   entry = save_entry(entry)
   output = template('index', year=year, entry=entry, title='Saved', 
                     current_year=str(datetime.date.today().year),
