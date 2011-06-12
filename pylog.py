@@ -50,6 +50,8 @@ def parse_entries(rows_in):
   """Given a list of row objects returned by a fetch, copy the data into a new
   dictionary after running each entry through the markdown parser."""
   def nice_date(date):
+    """We can't do this in the db as sqlites strftime does not support the 
+    formats we want."""
     nd = datetime.date(int(date[0:4]),int(date[5:7]),int(date[8:10]))
     return nd.strftime('%a %b %d, %Y')
   
