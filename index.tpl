@@ -31,7 +31,7 @@ body {
 	border:solid;
 	padding:5px;
 	-moz-border-radius: 1em;
-	align: center;
+	text-align: center;
 //  width: 100%;
 }
 
@@ -80,8 +80,6 @@ body {
 }
 .lastupdated a:link {color: black;}
 .lastupdated a:visited {color: black;}
-
-
 
 </style>
 </head>   
