@@ -157,6 +157,7 @@ def search(text=''):
   return output
 
 
+# Nasty stuff -------------------------------------------------------------------
 @route('/quit')
 def quit_server():
   """A bit extreme, but really the only thing that worked, including exit(0),
@@ -190,7 +191,7 @@ def save_config():
 def create_database():
   """."""
   c, conn = get_cursor()
-  c.execute('CREATE TABLE "entries" ("id" INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, "title" varchar(255), "date" datetime, "body" text, "place" varchar(255), "lat" decimal, "lon" decimal, "created_at" datetime, "updated_at" datetime)')
+  c.execute('CREATE TABLE "entries" ("id" INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, "title" varchar(255), "date" datetime, "body" text,  "created_at" datetime, "updated_at" datetime)')
   conn.commit()
 
 # Configuration pages ---------------------------------------------------------  
