@@ -13,15 +13,11 @@ body {
 	}
 
 .year {
-//	float:left;
 	text-align: center;
-//	display:block;
   font-size: 6em;
 	font-weight: bold;
 	font-family:"Century Gothic";
 	color: black;
-//  -moz-transform: rotate(-90deg);
-//	left:1cm;
 }
 
 .year-pane {
@@ -32,7 +28,6 @@ body {
 	padding:5px;
 	-moz-border-radius: 1em;
 	text-align: center;
-//  width: 100%;
 }
 
 .year-pane a:link {text-decoration: none; color: black;}
@@ -47,10 +42,6 @@ body {
 .content {
   font-family:"Century Gothic";	
 	font-size: 11pt;
-	//background-color:#5ff;
-	//border:thin;
-	//border-style:solid;
-  //-moz-border-radius: 1em;
 	padding-left:2em;
 	padding-right:2em;
 	padding-top:.1em;
@@ -58,7 +49,6 @@ body {
 	margin: 1em auto;	
   width: 12cm;
   text-align: left;
-  //box-shadow: 10px 10px 5px #888;
 	}
 
 .title {
