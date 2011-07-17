@@ -116,7 +116,7 @@ body {
 <div class="content">
   <div class='date'>{{row['nicedate']}}</div>
   <div class='title'>{{row['title']}}</div>
-  <p>{{!row['body']}}</p>
+  <p>{{!row['htmlcache']}}</p>
   <div class='lastupdated'>
   <a href="/edit/{{row['id']}}" title="click to edit">Last edited: {{row['updated_at']}}</a>
   </div>

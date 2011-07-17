@@ -19,15 +19,13 @@ def get_cursor():
 def fetch_single_entry(id):
   c, conn = get_cursor()
   c.execute('SELECT * FROM entries WHERE id LIKE ?', (id,))
-  #return c.fetchall()
-  return parse_entries(c.fetchall())
+  return c.fetchall()
   
 def fetch_all_entries():
-  """Not really used. Returns a list of all the entries in the diary."""
+  """Returns a list of all the entries in the diary."""
   c, conn = get_cursor()
-  c.execute('select * from entries order by date desc')
-  #return c.fetchall()
-  return parse_entries(c.fetchall())
+  c.execute('SELECT * FROM entries ORDER BY date DESC')
+  return c.fetchall()
 
 def fetch_entries_by_year(year):
   """Fetch all entries for the given year. I chose this as a good compromise
@@ -35,53 +33,43 @@ def fetch_entries_by_year(year):
   c, conn = get_cursor()
   st = '%s-01-01' %(year)
   nd = '%s-12-31' %(year)
-  c.execute("select * from entries where (date >= date(?) and date <= date(?)) order by date desc", (st,nd))
-  rows = c.fetchall()
-  return parse_entries(rows)
+  c.execute("SELECT * FROM entries WHERE (date >= date(?) AND date <= date(?)) ORDER BY date DESC", (st,nd))
+  return c.fetchall()
 
 def fetch_entries_by_search(text):
   """Fetch all entries containing text."""
   c, conn = get_cursor()
   c.execute("SELECT * FROM entries WHERE (title LIKE ? OR body LIKE ?) order by date desc", ("%%%s%%" %text, "%%%s%%" %text))
-  rows = c.fetchall()
-  return parse_entries(rows)
+  return c.fetchall()
   
-def parse_entries(rows_in):
-  """Given a list of row objects returned by a fetch, copy the data into a new
-  dictionary after running each entry through the markdown parser."""
+def cache_generator(entry):
+  """Generate our html cache"""
   def nice_date(date):
     """We can't do this in the db as sqlites strftime does not support the 
     formats we want."""
     nd = datetime.date(int(date[0:4]),int(date[5:7]),int(date[8:10]))
     return nd.strftime('%a %b %d, %Y')
   
-  rows = []
-  for this_row in rows_in:
-    new_row = {
-      'id': this_row['id'],
-      'date': this_row['date'],
-      'nicedate': nice_date(this_row['date']),
-      'title': this_row['title'],
-      'body': md(this_row['body']),
-      'markup text': this_row['body'],
-      'updated_at': this_row['updated_at']}
-    rows.append(new_row)
-  return rows
+  entry['nicedate'] = nice_date(entry['date'])
+  entry['htmlcache'] = md(entry['body'])
+  return entry
 
 def create_new_entry(entry):
   c, conn = get_cursor()
-  now = datetime.datetime.now()
-  c.execute("INSERT INTO entries (title,date,body,created_at,updated_at) VALUES (?,?,?,?,?)", 
-            (entry['title'], now, entry['body'], now, now))
+  entry['date'] = datetime.datetime.now().isoformat()
+  entry = cache_generator(entry)
+  c.execute("INSERT INTO entries (title,date,nicedate,body,htmlcache,created_at,updated_at) VALUES (?,?,?,?,?,?,?)", 
+            (entry['title'], entry['date'], entry['nicedate'], entry['body'], entry['htmlcache'], entry['date'], entry['date']))
   conn.commit()
   
 
 def save_entry(entry):
   """We then refetch the saved entry so we can display it."""
   c, conn = get_cursor()
-  now = datetime.datetime.now()  
-  c.execute("UPDATE entries SET date = ?, title = ?, body = ?, updated_at = ? WHERE id LIKE ?", 
-            (entry['date'], entry['title'], entry['body'], now, entry['id']))
+  now = datetime.datetime.now()
+  entry = cache_generator(entry)  
+  c.execute("UPDATE entries SET date = ?, nicedate = ?, title = ?, body = ?, htmlcache = ?, updated_at = ? WHERE id LIKE ?", 
+            (entry['date'], entry['nicedate'], entry['title'], entry['body'], entry['htmlcache'], now, entry['id']))
   conn.commit()
   return fetch_single_entry(entry['id'])[0]
 
@@ -106,7 +94,8 @@ def index(year=str(datetime.date.today().year)):
   If edit is False but id is an integer, scroll to that entry using an anchor.
   This is used to show us an entry we have just edited."""
 
-  rows = fetch_entries_by_year(year)
+  #rows = fetch_entries_by_year(year)
+  rows = fetch_all_entries()
   output = template('index', rows=rows, 
                     year=year, year_count=get_year_count_list(), 
                     title=year, view='list')
@@ -191,7 +180,7 @@ def save_config():
 def create_database():
   """."""
   c, conn = get_cursor()
-  c.execute('CREATE TABLE "entries" ("id" INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, "title" varchar(255), "date" datetime, "body" text,  "created_at" datetime, "updated_at" datetime)')
+  c.execute('CREATE TABLE "entries" ("id" INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, "title" varchar(255), "date" datetime, "nicedate" text, "body" text, "htmlcache" text, "created_at" datetime, "updated_at" datetime)')
   conn.commit()
 
 # Configuration pages ---------------------------------------------------------  
