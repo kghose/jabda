@@ -6,9 +6,8 @@
 
 body {
 	font-family:"Century Gothic";
-	font-size: 12pt;
+	font-size: 9pt;
 	color: #333;
-	text-align:center;
 	}
 
 .pane {
@@ -17,6 +16,7 @@ body {
 }
 
 .year-pane {
+	font-size: 9pt;
 	padding:10px;
 	border-radius: 20px;
 	text-align: center;
@@ -68,6 +68,19 @@ body {
 .lastupdated a:link {color: black;}
 .lastupdated a:visited {color: black;}
 
+.config-pane {
+	background-color: aqua;
+	border-radius: 10px;
+	padding-left:5px;
+	padding-right:5px;	
+}
+.config-pane input {border-radius:10px}
+.config-pane-button {width: 75px}
+
+.config-pane div span {display:none}
+.config-pane div:hover span {display:inline}
+
+
 </style>
 </head>   
 <body>
@@ -83,7 +96,7 @@ body {
 </table>
 </div>
 
-<div class='pane content-pane'>
+<div class="pane content-pane">
 
 %if view=='list': #In the traditional list view we get the new entry box 
 <form action="/new" method="POST">
@@ -128,5 +141,22 @@ body {
 %end
 
 </div> <!-- content pane -->
+
+<div class="pane config-pane">
+<div>
+Config+
+<span>
+<form action="/backup" method="POST">
+<input type="submit" name="Backup to" value="Backup to" class="config-pane-button">
+<input type="file" name="fname" value="a.sqlite3">
+</form>
+<form action="/selectdb" method="POST">
+<input type="submit" name="select" value="Select db" class="config-pane-button">
+<input type="file" name="db_name" value="a.sqlite3">
+</form>
+</span>
+</div>
+</div>
+
 </body>
 </html>
