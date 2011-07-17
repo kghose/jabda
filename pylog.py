@@ -22,10 +22,10 @@ def fetch_single_entry(id):
   #return c.fetchall()
   return parse_entries(c.fetchall())
   
-def fetch_all_entries():
+def fetch_entries(limit=7,offset=0):
   """Not really used. Returns a list of all the entries in the diary."""
   c, conn = get_cursor()
-  c.execute('select * from entries order by date desc')
+  c.execute('SELECT * FROM entries ORDER BY date DESC LIMIT ? OFFSET ?',(limit,offset))
   #return c.fetchall()
   return parse_entries(c.fetchall())
 
@@ -97,7 +97,7 @@ def get_year_count_list():
   
 @route('/')  
 @route('/:year')
-def index(year=str(datetime.date.today().year)):
+def index(year=None):
   """Main page serve function. 
   If edit is True and id has a integer value,
   instead of showing a form for a new entry at the top, setup a form for
@@ -106,7 +106,11 @@ def index(year=str(datetime.date.today().year)):
   If edit is False but id is an integer, scroll to that entry using an anchor.
   This is used to show us an entry we have just edited."""
 
-  rows = fetch_entries_by_year(year)
+  if year == None:
+    rows = fetch_entries()
+  else:
+    rows = fetch_entries_by_year(year)
+    
   output = template('index', rows=rows, 
                     year=year, year_count=get_year_count_list(), 
                     title=year, view='list')
