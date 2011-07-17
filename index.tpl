@@ -7,7 +7,6 @@
 body {
 	font-family:"Century Gothic";
 	font-size: 12pt;
-  background-color: #fff; 
 	color: #333;
 	text-align:center;
 	}
@@ -29,12 +28,12 @@ body {
 .year-pane a:hover {text-decoration: underline overline; color: red;}
 
 .content-pane {
+	padding:10px;
   font-family:"Century Gothic";	
 	font-size: 11pt;
 	margin-left:2em;
   width: 12cm;
   text-align: left;
-  border-radius: 5px;
 }
 .content-pane input {
 	width: 100%; 
@@ -88,7 +87,7 @@ body {
 
 %if view=='list': #In the traditional list view we get the new entry box 
 <form action="/new" method="POST">
-<p><input type="text" name="title" class="entry" title="Entry title" autocomplete="off"></p>
+<input type="text" name="title" class="entry" title="Entry title" autocomplete="off">
 <p><textarea rows="10" wrap="virtual" name="body" class="entry" title="Text of entry"></textarea></p>
 <input type="submit" name="save" value="save">
 </form>
