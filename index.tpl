@@ -109,28 +109,23 @@ body {
 %end
 
 %elif view=='edit': #Allow us to edit a single entry
-<div class="content">
-Editing <b>{{entry['title']}}</b>
-</div>
-<div class="content">
+<h3>Editing {{entry['title']}}</h3>
+
   <form action="/save/{{entry['id']}}" method="POST">
    <p><input type="text" name="date" class="entry" title="Entry date" value="{{entry['date']}}"></p>  
    <p><input type="text" name="title" class="entry" title="Entry title" value="{{entry['title']}}"></p>
    <p><textarea rows="10" wrap="virtual" name="body" class="entry" title="Text of entry">{{entry['markup text']}}</textarea></p>
    <input type="submit" name="save" value="save">
   </form>
-</div>
+
 %elif view=='saved': #Show us the edited entry only
-<div class="content">
-Saved <b>{{entry['title']}}</b>
-</div>
-<div class="content">
+<h3>Saved {{entry['title']}}</h3>
+
   <div class='date'>{{entry['date']}}</div>
   <div class='title'>{{entry['title']}}</div>
   <p>{{!entry['body']}}</p>
   <div align="right"><a href="/edit/{{entry['id']}}">edit</a></div>
   <div class='lastupdated'>Last edited: {{entry['updated_at']}}</div>
-</div>
 %end
 
 </div> <!-- content pane -->
