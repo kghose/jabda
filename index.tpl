@@ -1,6 +1,6 @@
 <html>
 <head>
-<title>Diary</title>
+<title>জাবদা</title>
 
 <style type="text/css">
 
