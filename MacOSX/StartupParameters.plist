@@ -1,0 +1,12 @@
+{
+ Description = "Diary server";
+ Provides    = ("Diary");
+ Uses        = ("python");
+ OrderPreference = "Last";
+ Messages =
+ {
+  start = "Starting Diary server";
+  stop = "Stopping Diary server";
+  restart = "Restarting Diary server";
+ };
+}

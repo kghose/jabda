@@ -1,0 +1,36 @@
+#!/bin/sh
+
+##
+# Diary service startup script 
+##
+
+. /etc/rc.common
+
+StartService ()
+{
+    ConsoleMessage "Starting Diary"
+    cd /Users/kghose/Source/Jabda/
+    /Library/Frameworks/Python.framework/Versions/2.6/bin/python pylog.py &
+    echo $! > jabda.pid
+}
+
+StopService ()
+{
+		cd /Users/kghose/Source/Jabda/
+    if pid=`cat jabda.pid`; then
+    ConsoleMessage "Stopping Diary"
+    kill -TERM "${pid}"
+    rm jabda.pid
+    else
+    ConsoleMessage "Diary not running"
+    fi
+}
+
+RestartService ()
+{
+    ConsoleMessage "Restarting Diary"
+    StopService
+    StartService
+}
+
+RunService "$1"
