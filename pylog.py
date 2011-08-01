@@ -199,15 +199,31 @@ def create_database():
   conn.commit()
 
 # Configuration pages ---------------------------------------------------------  
-@route('/selectdb/:newdbname')
-def select_database(newdbname='pylogdb.sqlite3'):
-  globals()['dbname']=newdbname
-  config.set('Basic', 'dbname', newdbname)
-  save_config()
-  return index()
+@route('/config')
+def show_config_page():
+  """Show a page with some configuration data and some simple stats."""
+  dbinfo = {}
+  from sys import version
+  dbinfo['python version'] = version  
+  cfg = {'dbinfo': dbinfo,
+         'cfg file': config}
+  return template('index', view='config', cfg=cfg)
 
-@route('/createdb/:newdbname')
-def new_database(newdbname='pylogdb.sqlite3'):
+@route('/selectdb', method='POST')
+def select_database():
+  newdbname = request.POST.get('newdbname', '').strip()
+  import os
+  if os.path.exists(newdbname):
+    globals()['dbname']=newdbname
+    config.set('Basic', 'dbname', newdbname)
+    save_config()
+    return index()
+  else:
+    return new_database()
+
+@route('/createdb', method='POST')
+def new_database():
+  newdbname = request.POST.get('newdbname', '').strip()
   globals()['dbname']=newdbname
   create_database()
   config.set('Basic', 'dbname', newdbname)

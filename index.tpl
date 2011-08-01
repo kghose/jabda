@@ -68,22 +68,18 @@ body {
 .lastupdated a:link {color: black;}
 .lastupdated a:visited {color: black;}
 
-.config-pane {
-	background-color: aqua;
-	border-radius: 10px;
-	padding-left:5px;
-	padding-right:5px;	
-}
-.config-pane input {border-radius:10px}
-.config-pane-button {width: 75px}
-
-.config-pane div span {display:none}
-.config-pane div:hover span {display:inline}
-
-
 </style>
 </head>   
 <body>
+
+%if view=='config':
+
+<form action="/selectdb" method="POST">
+<input type="submit" name="select" value="Set as new db file" style="width: 150px;">
+<input type="text" name="newdbname" size="60" value="{{cfg['cfg file'].get('Basic','dbname')}}">
+</form>
+
+%else:
 
 <div class="pane year-pane">
 <form action="/search" method="GET">
@@ -142,21 +138,11 @@ body {
 
 </div> <!-- content pane -->
 
-<div class="pane config-pane">
-<div>
-Config+
-<span>
-<form action="/backup" method="POST">
-<input type="submit" name="Backup to" value="Backup to" class="config-pane-button">
-<input type="file" name="fname" value="a.sqlite3">
-</form>
-<form action="/selectdb" method="POST">
-<input type="submit" name="select" value="Select db" class="config-pane-button">
-<input type="file" name="db_name" value="a.sqlite3">
-</form>
-</span>
+<div class="pane year-pane">
+<a href="config">Config</a>
 </div>
-</div>
+
+%end #if view == 'config'
 
 </body>
 </html>
