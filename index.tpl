@@ -74,10 +74,12 @@ body {
 
 %if view=='config':
 
+<div class="pane year-pane">
 <form action="/selectdb" method="POST">
 <input type="submit" name="select" value="Set as new db file" style="width: 150px;">
 <input type="text" name="newdbname" size="60" value="{{cfg['cfg file'].get('Basic','dbname')}}">
 </form>
+</div>
 
 %else:
 
