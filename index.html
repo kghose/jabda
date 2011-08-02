@@ -3,7 +3,7 @@
 <head>
   <meta charset='utf-8'>
 
-  <title>kghose/jabda @ GitHub</title>
+  <title>Jabda: a personal journal program</title>
 
   <style type="text/css">
     body {
@@ -11,12 +11,21 @@
       background-color: #ffffff;
       font-family: Helvetica, Arial, FreeSans, san-serif;
       color: #000000;
+      margin: auto;
+      padding: 20px;
+      width: 700px;
     }
+  
+    .programicon {
+    	width: 128px; 
+    	float: right;
+    }
+    
     #container {
       margin: 0 auto;
       width: 700px;
     }
-    h1 { font-size: 3.8em; color: #000000; margin-bottom: 3px; }
+    h1 { font-size: 3.8em; color: #000000; }
     h1 .small { font-size: 0.4em; }
     h1 a { text-decoration: none }
     h2 { font-size: 1.5em; color: #000000; }
@@ -31,21 +40,40 @@
 </head>
 
 <body>
-  <a href="http://github.com/kghose/jabda"><img style="position: absolute; top: 0; right: 0; border: 0;" src="http://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png" alt="Fork me on GitHub" /></a>
 
-  <div id="container">
+<img src="icon.png" class="programicon">
 
-    <div class="download">
-      <a href="https://github.com/downloads/kghose/jabda/jabda_2011_08_01.zip">
-        Windows exe bundle</a>
-    </div>
+<h1>Jabda<br/>
+<span class="small">A desktop personal journal (diary)</span></h1>
 
-    <h1><a href="http://github.com/kghose/jabda">jabda</a>
-      <span class="small">by <a href="http://github.com/kghose">kghose</a></span></h1>
+<p>Jabda is a simple desktop program with which you can keep a personal journal.
+Jadba's interface is through your favorite browser.</p>
 
-    <div class="description">
-      A desktop personal journal (diary)
-    </div>
+Installation (Windows)
+<ol>
+<li>Get the application <a href="http://github.com/downloads/kghose/jabda/jabda_2011_08_01.zip">bundle</a></li>
+<li>Unzip it where ever you like.</li>
+<li>Double click on pylog.exe to start the diary server</li>
+</ol>
+
+Installation (Mac)
+
+
+Using (First start)
+<ol>
+<li>Start your browser and enter <pre>http://localhost:3010/config</pre></li>
+<li>Enter the full path to where you would like to save your diary file. e.g.
+<pre>/Users/myname/mydiary.sqlite3</pre>
+Entering <pre>"./mydiary.sqlite3"</pre> will save the diary in the same folder
+as the program, which is useful if you put the program on a USB stick or portable
+HDD which you carry round with you.
+</ol>
+
+Using
+<ol>
+<li>Start your browser and enter <pre>http://localhost:3010</pre></li>
+</ol>
+
 
     <h2>Source</h2>
     <p>
