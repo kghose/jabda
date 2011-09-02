@@ -141,7 +141,7 @@ body {
 </div> <!-- content pane -->
 
 <div class="pane year-pane">
-<a href="config">Config</a>
+<a href="/config">Config</a>
 </div>
 
 %end #if view == 'config'
