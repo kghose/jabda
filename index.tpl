@@ -124,7 +124,7 @@ body {
   <form action="/save/{{entry['id']}}" method="POST">
    <p><input type="text" name="date" class="entry" title="Entry date" value="{{entry['date']}}"></p>  
    <p><input type="text" name="title" class="entry" title="Entry title" value="{{entry['title']}}"></p>
-   <p><textarea rows="10" wrap="virtual" name="body" class="entry" title="Text of entry">{{entry['markup text']}}</textarea></p>
+   <p><textarea rows="30" wrap="virtual" name="body" class="entry" title="Text of entry">{{entry['markup text']}}</textarea></p>
    <input type="submit" name="save" value="save">
   </form>
 
