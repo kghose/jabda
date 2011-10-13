@@ -30,7 +30,6 @@ body {
 .year-pane a:hover {text-decoration: underline overline; color: red;}
 
 .content-pane {
-	padding:10px;
   font-family:"Century Gothic";	
 	font-size: 11pt;
 	margin-left:2em;
@@ -40,10 +39,14 @@ body {
 .content-pane input {
 	width: 100%; 
 	border-radius: 10px;
+	padding: 2px;
+	margin: 0px;
 }
 .content-pane textarea {
 	width: 100%; 
 	border-radius: 10px;
+	padding: 2px;
+	margin: 0px;
 }
 
 .entry {
