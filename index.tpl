@@ -7,6 +7,7 @@
 body {
 	font-family:"Century Gothic";
 	font-size: 9pt;
+	background-color: lightgray;
 	color: #333;
 	}
 
@@ -20,7 +21,8 @@ body {
 	padding:10px;
 	border-radius: 20px;
 	text-align: center;
-	background-color: lawngreen;
+	background-color: darkgray;
+	color:black;
 }
 .year-pane input {border-radius:10px;padding-left:5px;padding-right:5px;}
 .year-pane a:link {text-decoration: none; color: black;}
@@ -38,14 +40,18 @@ body {
 .content-pane input {
 	width: 100%; 
 	border-radius: 10px;
-	padding-left:5px;
-	padding-right:5px;
 }
 .content-pane textarea {
 	width: 100%; 
 	border-radius: 10px;
-	padding-left:5px;
-	padding-right:5px;
+}
+
+.entry {
+  background-color: white;
+	border-radius: 10px;
+	border-top-left-radius: 0px;	
+	padding:10px;
+	margin-bottom: 15px;  
 }
 
 .title {
@@ -58,6 +64,15 @@ body {
 .date {
   font-weight: normal;
 	font-size: .8em;
+	padding-left: 10px;
+	background-color: black;
+	color: white;
+	padding-right: 5px;
+	padding-top: 5px;
+	display: inline-block;
+	border-radius: 10px;
+	border-bottom-left-radius: 0;
+	border-bottom-right-radius: 0;
 }
 
 .lastupdated {
@@ -111,10 +126,12 @@ body {
 %if view=='list' or view=='searchlist': #Show us the traditional list view
 %for row in rows:
   <div class='date'>{{row['nicedate']}}</div>
+	<div class='entry'>
   <div class='title'>{{row['title']}}</div>
   <p>{{!row['body']}}</p>
   <div class='lastupdated'>
   <a href="/edit/{{row['id']}}" title="click to edit">Last edited: {{row['updated_at']}}</a>
+  </div>
   </div>
 %end
 
