@@ -1,63 +1,32 @@
 """
 Jabda is a simple personal diary program. I am encouraged to write a diary if I can make entries quickly. I had Jabda as a bottle application using a browser as the GUI and that worked fine, but the program was not as responsive as I wanted. Jabda is now a very simple TKinter application running off a sqlite backend.
 
-|-------------------------|
-|    A      |             |
-|-----------|             |
-|           |             |
-|    B      |      C      |
-|           |             |
-|           |             |
-|-------------------------|
+|-------------------|
+|     |             |
+|  A  |      B      |
+|     |             |
+|     |             |
+|-------------------|
 
-A - is the search window
-B - list box that lets us flip through our entries/search results
-C - is the reading pane, where we can read the entries.
+A - list box that lets us flip through our entries/search results
+B - reading/writing pane.
 
-New entry - press 'n' when in windows B or C
-Edit entry - press 'e' when in windows B or C
-When in B press 1 to get all entries, press 2 to get search results
-Type in a search term in A to get a list entries in B
+New entry   -  Press <ctrl>+N. The B window will clear, create your entry.
+               Press <shift> + <enter> to save the entry. ESC to cancel
+               A pane is inactive during editing
+
+Edit entry  -  Just edit the text in box B.
+               Press <shift> + <enter> to save. ESC to cancel
+
+Search      -  Press <ctrl>+F. The B window will clear. Type your term and hit <shift> + <enter>
+
+Exit search -  Press <ctrl>+F again
 """
 
 import logging
 logger = logging.getLogger(__name__)
-import Tkinter as tki, tempfile, argparse, ConfigParser
-from PIL import Image, ImageTk
-import libchhobi as lch, dirbrowser as dirb, exiftool
-from cStringIO import StringIO
+import Tkinter as tki, argparse, ConfigParser, sqlite3
 from os.path import join, expanduser
-
-class MultiPanel():
-  """We want to setup a pseudo tabbed widget. One shows all entries the other the search results. All listviews should be hooked up to exactly the same event handlers but only one of them should be visible at any time.
-  Based off http://code.activestate.com/recipes/188537/
-  """
-  def __init__(self, parent):
-    #This is the frame that we display
-    self.fr = tki.Frame(parent, bg='black')
-    self.fr.pack(side='top', expand=True, fill='both')
-    self.widget_list = []
-    self.active_widget = None #Is an integer
-
-  def __call__(self):
-    """This returns a reference to the frame, which can be used as a parent for the widgets you push in."""
-    return self.fr
-
-  def add_widget(self, wd):
-    if wd not in self.widget_list:
-      self.widget_list.append(wd)
-    if self.active_widget is None:
-      self.set_active_widget(0)
-    return len(self.widget_list) - 1 #Return the index of this widget
-
-  def set_active_widget(self, wdn):
-    if wdn >= len(self.widget_list) or wdn < 0:
-      logger.error('Widget index out of range')
-      return
-    if self.widget_list[wdn] == self.active_widget: return
-    if self.active_widget is not None: self.active_widget.forget()
-    self.widget_list[wdn].pack(fill='both', expand=True)
-    self.active_widget = self.widget_list[wdn]
 
 class App(object):
 
@@ -65,80 +34,56 @@ class App(object):
     self.root = tki.Tk()
     self.root.wm_title('Jabda')
     self.load_prefs()
+    self.connect_to_database()
     self.setup_window()
+    self.set_entries(self.get_entries())
     self.root.wm_protocol("WM_DELETE_WINDOW", self.cleanup_on_exit)
-    self.etool = exiftool.PersistentExifTool()
     self.cmd_state = 'Idle'
-    self.one_key_cmds = ['1', '2', '3', 'r', 'a', 'x', 'h']
-    self.command_prefix = ['d', 'c', 'k', 's', 'z']
-    #If we are in Idle mode and hit any of these keys we move into a command mode and no longer propagate keystrokes to the browser window
-    self.pile = set([]) #We temporarily 'hold' files here
-    self.cmd_history = lch.CmdHist(memory=20)
-    self.tab.widget_list[0].set_dir_root(self.config.get('DEFAULT','root'))
-
-  def cleanup_on_exit(self):
-    """Needed to shutdown the exiftool and save configuration."""
-    self.etool.close()
-    self.config.set('DEFAULT', 'geometry', self.root.geometry())
-    with open(self.config_fname, 'wb') as configfile:
-      self.config.write(configfile)
-    self.root.quit() #Allow the rest of the quit process to continue
 
   def load_prefs(self):
-    self.config_fname = expanduser('~/chhobi2.cfg')
+    self.config_fname = expanduser('~/jabda.cfg')
     self.config_default = {
-        'root': './',
+        'dbpath': '/Volumes/Personal Documents/mydiary.sqlite3',
         'geometry': 'none',
     }
     self.config = ConfigParser.ConfigParser(self.config_default)
     self.config.read(self.config_fname)
 
-#dir_root=self.config.get('DEFAULT','root')
+  def connect_to_database(self):
+    """Returns us a cursor and connection object to our database."""
+    self.conn = sqlite3.connect(self.config.get('DEFAULT','dbpath'))
+    self.conn.row_factory = sqlite3.Row
+
+  def get_entries(self):
+    """Date formatting from http://www.sqlite.org/lang_datefunc.html."""
+    c = self.conn.cursor()
+    c.execute("SELECT id, DATE(date) FROM entries order by date desc")
+    return c.fetchall()
+
+  def set_entries(self, list):
+    self.listbox.delete(0, tki.END) # clear
+    for id, value in list:
+      self.listbox.insert(tki.END, value)
+    self.entries = list
+
   def setup_window(self):
-    def add_dir_browse(parent):
-      dir_win = dirb.DirBrowse(parent, bd=0)
-      #dir_win.pack(side='top', expand=True, fill='both')
-      dir_win.treeview.bind("<<TreeviewSelect>>", self.selection_changed, add='+')
-      dir_win.treeview.bind('<<TreeviewOpen>>', self.open_external, add='+')
-      return dir_win
+    self.listbox = tki.Listbox(self.root, selectmode=tki.BROWSE, selectbackground='black', selectforeground='white', selectborderwidth=0, width=13, bd=5, highlightthickness=0)
+    self.listbox.pack(side='left', fill='y')
 
-    self.tab = MultiPanel(self.root)
-    for n in [0,1,2]:
-      self.tab.add_widget(add_dir_browse(self.tab()))
-
-    fr = tki.Frame(self.root, bg='black')
-    fr.pack(side='top', fill='x')
-
-    #A trick to force the thumbnail_label to a particular size
-    f = tki.Frame(fr, height=150, width=150)
-    f.pack_propagate(0) # don't shrink
-    f.pack(side='left')
-    self.thumbnail_label = tki.Label(f, bg='black')
-    self.thumbnail_label.pack(fill='both', expand=True)
-    self.setup_info_text(fr)
-
-    self.cmd_win = tki.Text(self.root, undo=True, width=50, height=3, fg='black', bg='white')
-    self.cmd_win['font'] = ('consolas', '12')
-    self.cmd_win.pack(side='top', fill='x')
-    self.cmd_win.bind("<Key>", self.cmd_key_trap)
-
-    self.log_win = tki.Text(self.root, width=50, height=1, fg='yellow', bg='black', font=('arial', '10'), highlightthickness=0)
-    self.log_win.pack(side='top', fill='x')
-
-    self.chhobi_icon = tki.PhotoImage(file="icon_sm.pgm") #This is the photo we show for blank
+    self.edit_win = tki.Text(self.root, undo=True, width=50, height=12, fg='white', bg='black', insertbackground='white', highlightthickness=0)
+    self.edit_win.pack(side='left', expand=True, fill='both')
 
     geom=self.config.get('DEFAULT', 'geometry')
     if geom != 'none':
       self.root.geometry(geom)
 
-  def setup_info_text(self, fr):
-    """Info window set up is a little complicated."""
-    self.info_text = tki.Text(fr, width=40, height=12, fg='white', bg='black', padx=5, pady=5, highlightthickness=0)#highlightthickness removes the border so we get a cool uniform black band
-    self.info_text['font'] = ('courier', '11')
-    self.info_text.pack(side='left', fill='x', expand=True)
-    self.info_text.tag_configure('caption', font='helvetica 11 bold', relief='raised')
-    self.info_text.tag_configure('keywords', font='helvetica 11 italic')
-
+  def cleanup_on_exit(self):
+    """Save pending edits configuration."""
+    #self.save_entry()
+    self.config.set('DEFAULT', 'geometry', self.root.geometry())
+    with open(self.config_fname, 'wb') as configfile:
+      self.config.write(configfile)
+    self.root.quit() #Allow the rest of the quit process to continue
 
   def cmd_key_trap(self, event):
     chr = event.char
