@@ -11,16 +11,17 @@ Jabda is a simple personal diary program. I am encouraged to write a diary if I 
 A - list box that lets us flip through our entries/search results
 B - reading/writing pane.
 
-New entry   -  Press <ctrl>+N. The B window will clear, create your entry.
+New entry   -  Press 'n'. The B window will clear, allowing you to create your entry.
                Press <shift> + <enter> to save the entry. ESC to cancel
-               A pane is inactive during editing
+               Pane A is inactive during editing
 
 Edit entry  -  Just edit the text in box B.
                Press <shift> + <enter> to save. ESC to cancel
+               Pane A is inactive during editing
 
-Search      -  Press <ctrl>+F. The B window will clear. Type your term and hit <shift> + <enter>
+Search      -  Press 's'. The B window will clear. Type your term and hit <shift> + <enter>
 
-Exit search -  Press <ctrl>+F again
+Exit search -  Press 'x'
 """
 
 import logging
@@ -43,7 +44,7 @@ class App(object):
   def load_prefs(self):
     self.config_fname = expanduser('~/jabda.cfg')
     self.config_default = {
-        'dbpath': '/Volumes/Personal Documents/mydiary.sqlite3',
+        'dbpath': 'mydiary.sqlite3',
         'geometry': 'none',
     }
     self.config = ConfigParser.ConfigParser(self.config_default)
@@ -52,7 +53,7 @@ class App(object):
   def connect_to_database(self):
     """Returns us a cursor and connection object to our database."""
     self.conn = sqlite3.connect(self.config.get('DEFAULT','dbpath'))
-    self.conn.row_factory = sqlite3.Row
+    #self.conn.row_factory = sqlite3.Row
 
   def get_entries(self):
     """Date formatting from http://www.sqlite.org/lang_datefunc.html."""
@@ -69,8 +70,12 @@ class App(object):
   def setup_window(self):
     self.listbox = tki.Listbox(self.root, selectmode=tki.BROWSE, selectbackground='black', selectforeground='white', selectborderwidth=0, width=13, bd=5, highlightthickness=0)
     self.listbox.pack(side='left', fill='y')
+    self.listbox.bind("<ButtonRelease-1>", self.selection_changed)
+    self.listbox.bind("<KeyRelease-Up>", self.selection_changed)
+    self.listbox.bind("<KeyRelease-Down>", self.selection_changed)
+    self.listbox.bind("<Key>", self.cmd_key_trap)
 
-    self.edit_win = tki.Text(self.root, undo=True, width=50, height=12, fg='white', bg='black', insertbackground='white', highlightthickness=0)
+    self.edit_win = tki.Text(self.root, undo=True, width=50, height=12, fg='white', bg='black', insertbackground='white', highlightthickness=0, wrap=tki.WORD)
     self.edit_win.pack(side='left', expand=True, fill='both')
 
     geom=self.config.get('DEFAULT', 'geometry')
@@ -88,109 +93,31 @@ class App(object):
   def cmd_key_trap(self, event):
     chr = event.char
     if self.cmd_state == 'Idle':
-      if chr in self.one_key_cmds:
-        self.single_key_command_execute(chr)
+      if chr=='n':
+        self.new()
         return 'break'
-      elif chr in self.command_prefix:
-        self.cmd_state = 'Command'
-      else:
-        self.propagate_key_to_browser(event)
+      elif chr=='s':
+        self.start_search()
         return 'break'
-    else:
-      if event.keysym == 'Return':
-        self.command_execute(event)
-        return 'break'
-      elif event.keysym == 'Escape':
-        self.command_cancel()
-      elif event.keysym == 'Up' or event.keysym == 'Down':
-        self.browse_history(event.keysym)
-
-  def propagate_key_to_browser(self, event):
-    """When we are in idle mode we like to mirror some key presses in the command window to the file browser."""
-    dir_win = self.tab.active_widget
-    dir_win.treeview.focus_set()
-    dir_win.treeview.event_generate('<Key>', keycode=event.keycode)
-    self.cmd_win.focus_set()
-
-  def get_thumbnail(self, file):
-    if file[1]=='file:photo':
-      im_data = self.etool.get_thumbnail_image(file[0])
-      if len(im_data):
-        thumbnail = Image.open(StringIO(im_data))
-      else:
-        logger.debug('No embedded thumnail for {:s}. Generating on the fly.'.format(file[0]))
-        #Slow process of generating thumbnail on the fly
-        if file[1]=='file:video': return self.chhobi_icon
-        thumbnail = Image.open(file[0])
-        thumbnail.thumbnail((150,150), Image.ANTIALIAS) #Probably slows us down?
-    else:
-      thumbnail = Image.open(StringIO(lch.get_thumbnail_from_xattr(file[0])))
-
-    return ImageTk.PhotoImage(thumbnail)
+      elif chr=='e':
+        self.edit()
+      elif chr=='d':
+        self.set_database()
 
   def selection_changed(self, event=None):
-    files = self.tab.active_widget.file_selection()
-    logger.debug(files)
-
-    if len(files):
-      photo = self.get_thumbnail(files[0])
-      self.thumbnail_label.config(image=photo)
-      self.thumbnail_label.image = photo #Keep a reference
-
-      exiv_data = self.etool.get_metadata_for_files(files)
-      self.display_exiv_info(exiv_data)
-    else:
-      self.info_text.delete(1.0, tki.END)
-      self.thumbnail_label.config(image=self.chhobi_icon)
-
-  def display_exiv_info(self, exiv_data):
-    cap_set = set([exiv_data[0].get('Caption-Abstract', '')])
-    key_set = set([ky for ky in exiv_data[0].get('Keywords', [])])
-
-    logger.debug(cap_set)
-    logger.debug(key_set)
-
-    for n in range(1,len(exiv_data)):
-      cap_set &= set([exiv_data[n].get('Caption-Abstract', '')])
-      key_set &= set([ky for ky in exiv_data[n].get('Keywords', [])])
-
-    self.info_text.delete(1.0, tki.END)
-    if len(cap_set):
-      self.info_text.insert(tki.END, cap_set.pop(), ('caption',))
-    info_text = '\n'
-    if len(key_set):
-      info_text += key_set.pop()
-      for key in key_set:
-        info_text += ', ' + key
-      info_text += '\n'
-    self.info_text.insert(tki.END, info_text, ('keywords',))
-
-    info_text = '\n'
-    if len(exiv_data) == 1:
-      for k in ['CreateDate', 'FNumber', 'ShutterSpeed', 'ISO', 'FocalLength', 'DOF','LensID','Model']:
-        if exiv_data[0].has_key(k):
-          info_text += k.ljust(14) + ': ' + str(exiv_data[0][k]) + '\n'
-    else:
-      info_text += '(Showing common info)'
-    self.info_text.insert(tki.END, info_text)
-
-  def single_key_command_execute(self, chr):
-    if chr == '1':
-      self.show_browser()
-    elif chr =='2':
-      self.show_search()
-    elif chr == '3':
-      self.show_pile()
-    elif chr == 'r':
-      self.reveal_in_finder()
-    elif chr == 'a':
-      self.add_selected_to_pile()
-    elif chr == 'x':
-      self.remove_selected_from_pile()
-    elif chr == 'h':
-      self.show_help()
+    item = self.listbox.curselection()[0]
+    sel_id = int(self.entries[int(item)][0])
+    c = self.conn.cursor()
+    c.execute("SELECT id, body FROM entries WHERE id={:d}".format(sel_id))
+    self.current_entry = c.fetchone()
+    self.edit_win.delete(1.0, tki.END)
+    self.edit_win.insert(tki.END, self.current_entry[1])
 
   def command_execute(self, event):
+    print 'Boo'
+    return
+
+
     command = self.cmd_win.get(1.0, tki.END)
     files = self.tab.active_widget.file_selection()
     if command[0] == 'd':
