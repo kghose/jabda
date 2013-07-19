@@ -37,7 +37,7 @@ class App(object):
     self.load_prefs()
     self.connect_to_database()
     self.setup_window()
-    self.set_entries(self.get_entries())
+    self.set_entries(self.get_all_entries())
     self.root.wm_protocol("WM_DELETE_WINDOW", self.cleanup_on_exit)
     self.cmd_state = 'Idle'
 
@@ -55,7 +55,7 @@ class App(object):
     self.conn = sqlite3.connect(self.config.get('DEFAULT','dbpath'))
     #self.conn.row_factory = sqlite3.Row
 
-  def get_entries(self):
+  def get_all_entries(self):
     """Date formatting from http://www.sqlite.org/lang_datefunc.html."""
     c = self.conn.cursor()
     c.execute("SELECT id, DATE(date) FROM entries order by date desc")
@@ -70,13 +70,15 @@ class App(object):
   def setup_window(self):
     self.listbox = tki.Listbox(self.root, selectmode=tki.BROWSE, selectbackground='black', selectforeground='white', selectborderwidth=0, width=13, bd=5, highlightthickness=0)
     self.listbox.pack(side='left', fill='y')
-    self.listbox.bind("<ButtonRelease-1>", self.selection_changed)
-    self.listbox.bind("<KeyRelease-Up>", self.selection_changed)
-    self.listbox.bind("<KeyRelease-Down>", self.selection_changed)
+    #self.listbox.bind("<ButtonRelease-1>", self.selection_changed)
+    #self.listbox.bind("<KeyRelease-Up>", self.selection_changed)
+    #self.listbox.bind("<KeyRelease-Down>", self.selection_changed)
+    self.listbox.bind('<<ListboxSelect>>', self.selection_changed)
     self.listbox.bind("<Key>", self.cmd_key_trap)
 
     self.edit_win = tki.Text(self.root, undo=True, width=50, height=12, fg='white', bg='black', insertbackground='white', highlightthickness=0, wrap=tki.WORD)
     self.edit_win.pack(side='left', expand=True, fill='both')
+    self.edit_win.bind("<Shift-Return>", self.save)
 
     geom=self.config.get('DEFAULT', 'geometry')
     if geom != 'none':
@@ -113,37 +115,22 @@ class App(object):
     self.edit_win.delete(1.0, tki.END)
     self.edit_win.insert(tki.END, self.current_entry[1])
 
-  def command_execute(self, event):
-    print 'Boo'
-    return
+  def new(self):
+    self.cmd_state ='editing'
+    self.current_entry = ('','') #No id, no body
+    self.edit_win.delete(1.0, tki.END)
+    self.listbox.config(state=tki.DISABLED)
+    self.edit_win.focus_set()
+
+  def save(self, event):
+    if self.edit_win.edit_modified():
+      print saving
+      self.set_entries(self.get_all_entries())
+    self.listbox.config(state=tki.NORMAL)
+    self.listbox.focus_set()
 
 
-    command = self.cmd_win.get(1.0, tki.END)
-    files = self.tab.active_widget.file_selection()
-    if command[0] == 'd':
-      dir_root = command[2:].strip()
-      self.set_new_photo_root(dir_root)
-    elif command[:2] == 'c ':
-      caption = command[2:].strip()
-      self.etool.set_metadata_for_files(files, {'caption': caption})
-      self.selection_changed(None) #Need to refresh stuff
-    elif command[:2] == 'k ':
-      keyword = command[2:].strip()
-      self.etool.set_metadata_for_files(files, {'keywords': [('+',keyword)]})
-      self.selection_changed(None) #Need to refresh stuff
-    elif command[:2] == 'k-':
-      keyword = command[3:].strip()
-      self.etool.set_metadata_for_files(files, {'keywords': [('-',keyword)]})
-      self.selection_changed(None) #Need to refresh stuff
-    elif command[0] == 's':
-      self.search_execute(command[2:].strip())
-    elif command[:2] == 'cp':
-      self.clear_pile()
-    elif command[:2] == 'z ':
-      self.resize_and_show(command[2:].strip().lower().split('x'))
-    self.cmd_win.delete(1.0, tki.END)
-    self.cmd_state = 'Idle'
-    self.cmd_history.add(command) #Does not distinguish between valid and invalid commands. Ok?
+
 
   def log_command(self, cmd):
     if hasattr(self, 'log_win_after_id'):
