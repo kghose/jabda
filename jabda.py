@@ -78,7 +78,8 @@ class App(object):
 
     self.edit_win = tki.Text(self.root, undo=True, width=50, height=12, fg='white', bg='black', insertbackground='white', highlightthickness=0, wrap=tki.WORD)
     self.edit_win.pack(side='left', expand=True, fill='both')
-    self.edit_win.bind("<Shift-Return>", self.save)
+    self.edit_win.bind('<<Modified>>', self.edit_start)
+    self.edit_win.bind("<Shift-Return>", self.execute)
 
     geom=self.config.get('DEFAULT', 'geometry')
     if geom != 'none':
@@ -101,8 +102,6 @@ class App(object):
       elif chr=='s':
         self.start_search()
         return 'break'
-      elif chr=='e':
-        self.edit()
       elif chr=='d':
         self.set_database()
 
@@ -112,8 +111,12 @@ class App(object):
     c = self.conn.cursor()
     c.execute("SELECT id, body FROM entries WHERE id={:d}".format(sel_id))
     self.current_entry = c.fetchone()
+    self.edit_win.unbind('<<Modified>>')
     self.edit_win.delete(1.0, tki.END)
     self.edit_win.insert(tki.END, self.current_entry[1])
+    self.edit_win.edit_modified(0)
+    self.edit_win.bind('<<Modified>>', self.edit_start)
+
 
   def new(self):
     self.cmd_state ='editing'
@@ -121,6 +124,21 @@ class App(object):
     self.edit_win.delete(1.0, tki.END)
     self.listbox.config(state=tki.DISABLED)
     self.edit_win.focus_set()
+
+  def edit_start(self, event):
+    if self.edit_win.edit_modified():
+      #self.edit_win.edit_modified(0)
+      self.cmd_state ='editing'
+      self.listbox.config(state=tki.DISABLED)
+      #self.edit_win.focus_set()
+
+  def execute(self, event):
+    if self.cmd_state=='edit':
+      self.save()
+    elif self.cmd_state=='search':
+      self.search()
+
+
 
   def save(self, event):
     if self.edit_win.edit_modified():
