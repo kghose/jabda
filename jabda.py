@@ -26,8 +26,7 @@ Exit search -  Press 'x'
 
 import logging
 logger = logging.getLogger(__name__)
-import Tkinter as tki, argparse, ConfigParser, sqlite3
-from os.path import join, expanduser
+import Tkinter as tki, argparse, ConfigParser, sqlite3, os.path, datetime
 
 class App(object):
 
@@ -37,35 +36,45 @@ class App(object):
     self.load_prefs()
     self.connect_to_database()
     self.setup_window()
-    self.set_entries(self.get_all_entries())
+    self.set_entry_list(self.get_all_entries())
     self.root.wm_protocol("WM_DELETE_WINDOW", self.cleanup_on_exit)
     self.cmd_state = 'Idle'
 
   def load_prefs(self):
-    self.config_fname = expanduser('~/jabda.cfg')
+    self.config_fname = os.path.expanduser('~/jabda.cfg')
     self.config_default = {
-        'dbpath': 'mydiary.sqlite3',
+        'dbpath': 'test.sqlite3',
         'geometry': 'none',
     }
     self.config = ConfigParser.ConfigParser(self.config_default)
     self.config.read(self.config_fname)
 
+  def create_database(self):
+    logger.info('Creating new database')
+    c = self.conn.cursor()
+    c.execute('CREATE TABLE "entries" ("id" INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, "entry_date" datetime, "entry" text)')
+    self.conn.commit()
+
   def connect_to_database(self):
     """Returns us a cursor and connection object to our database."""
+    logger.info('Connecting to {:s}'.format(self.config.get('DEFAULT','dbpath')))
+    need_to_create_db = not os.path.exists(self.config.get('DEFAULT','dbpath'))
     self.conn = sqlite3.connect(self.config.get('DEFAULT','dbpath'))
+    if need_to_create_db: self.create_database()
     #self.conn.row_factory = sqlite3.Row
 
   def get_all_entries(self):
     """Date formatting from http://www.sqlite.org/lang_datefunc.html."""
     c = self.conn.cursor()
-    c.execute("SELECT id, DATE(date) FROM entries order by date desc")
+    c.execute("SELECT id, DATE(entry_date) FROM entries order by entry_date desc")
     return c.fetchall()
 
-  def set_entries(self, list):
+  def set_entry_list(self, list):
     self.listbox.delete(0, tki.END) # clear
     for id, value in list:
       self.listbox.insert(tki.END, value)
     self.entries = list
+    self.current_entry_id = None
 
   def setup_window(self):
     self.listbox = tki.Listbox(self.root, selectmode=tki.BROWSE, selectbackground='black', selectforeground='white', selectborderwidth=0, width=13, bd=5, highlightthickness=0)
@@ -78,8 +87,8 @@ class App(object):
 
     self.edit_win = tki.Text(self.root, undo=True, width=50, height=12, fg='white', bg='black', insertbackground='white', highlightthickness=0, wrap=tki.WORD)
     self.edit_win.pack(side='left', expand=True, fill='both')
-    self.edit_win.bind('<<Modified>>', self.edit_start)
-    self.edit_win.bind("<Shift-Return>", self.execute)
+    self.edit_win.bind('<<Modified>>', self.edit_start) #We set this rightaway because we want to be able to start a new entry by just typing
+    self.edit_win.bind("<Shift-Return>", self.shift_enter_pressed)
 
     geom=self.config.get('DEFAULT', 'geometry')
     if geom != 'none':
@@ -109,46 +118,63 @@ class App(object):
     item = self.listbox.curselection()[0]
     sel_id = int(self.entries[int(item)][0])
     c = self.conn.cursor()
-    c.execute("SELECT id, body FROM entries WHERE id={:d}".format(sel_id))
-    self.current_entry = c.fetchone()
-    self.edit_win.unbind('<<Modified>>')
+    c.execute("SELECT id, entry FROM entries WHERE id={:d}".format(sel_id))
+    entry = c.fetchone()
+    self.edit_win.unbind('<<Modified>>') #Deleting and inserting will trigger the callback
     self.edit_win.delete(1.0, tki.END)
-    self.edit_win.insert(tki.END, self.current_entry[1])
-    self.edit_win.edit_modified(0)
+    self.edit_win.insert(tki.END, entry[1])
+    self.edit_win.edit_modified(0) #Deleting and inserting sets this flag
     self.edit_win.bind('<<Modified>>', self.edit_start)
-
+    self.current_entry_id = entry[0]
 
   def new(self):
-    self.cmd_state ='editing'
-    self.current_entry = ('','') #No id, no body
+    self.current_entry_id = None #No id
+    self.edit_win.unbind('<<Modified>>') #Deleting and inserting will trigger the callback
     self.edit_win.delete(1.0, tki.END)
-    self.listbox.config(state=tki.DISABLED)
     self.edit_win.focus_set()
+    self.start_editing()
 
   def edit_start(self, event):
-    if self.edit_win.edit_modified():
-      #self.edit_win.edit_modified(0)
-      self.cmd_state ='editing'
-      self.listbox.config(state=tki.DISABLED)
-      #self.edit_win.focus_set()
+    self.start_editing()
 
-  def execute(self, event):
-    if self.cmd_state=='edit':
+  def start_editing(self):
+    """We need to
+       1) Disable the listbox
+       2) Disconnect the selection changed function (Tkinter bug IMO)
+    """
+    self.cmd_state ='editing'
+    self.listbox.config(state=tki.DISABLED)
+    self.listbox.unbind('<<ListboxSelect>>') #Don't forget to bind after all this is over
+
+  def end_editing(self):
+    self.listbox.config(state=tki.NORMAL)
+    #TODO keep cursor at current entry
+    self.set_entry_list(self.get_all_entries())
+    self.listbox.focus_set()
+    self.listbox.bind('<<ListboxSelect>>', self.selection_changed)
+
+  def shift_enter_pressed(self, event):
+    if self.cmd_state=='editing':
       self.save()
+      return 'break'
     elif self.cmd_state=='search':
       self.search()
+      return 'break'
 
-
-
-  def save(self, event):
+  def save(self):
     if self.edit_win.edit_modified():
-      print saving
-      self.set_entries(self.get_all_entries())
-    self.listbox.config(state=tki.NORMAL)
-    self.listbox.focus_set()
-
-
-
+      logger.debug('Saving entry')
+      entry_text = self.edit_win.get(1.0, tki.END)
+      if self.current_entry_id is None:
+        query = 'INSERT INTO entries (entry_date, entry) VALUES (?,?)'
+        bindings = (datetime.datetime.now(), entry_text)
+      else:
+        query = 'UPDATE entries SET entry = ? WHERE id = ?'
+        bindings = (entry_text, self.current_entry_id)
+      c = self.conn.cursor()
+      c.execute(query, bindings)
+      self.conn.commit()
+    self.end_editing()
 
   def log_command(self, cmd):
     if hasattr(self, 'log_win_after_id'):
@@ -164,83 +190,12 @@ class App(object):
     self.cmd_state = 'Idle'
     self.log_command('Command canceled.')
 
-  def browse_history(self, keysym):
-    partial = self.cmd_win.get(1.0, tki.INSERT)
-    insert = self.cmd_win.index(tki.INSERT)
-    if keysym == 'Up':
-      step = -1
-    else:
-      step = 1
-    suggestion = self.cmd_history.completion(partial, step)
-    if suggestion is not '':
-      self.cmd_win.delete(1.0, tki.END)
-      self.cmd_win.insert(tki.END, suggestion)
-      self.cmd_win.mark_set(tki.INSERT, insert)
-
-  def set_new_photo_root(self, new_root):
-    self.config.set('DEFAULT', 'root', new_root)
-    self.tab.widget_list[0].set_dir_root(new_root) #0 is the disk browser
-
   def search_execute(self, query_str):
     self.log_command('Searching for {:s}'.format(lch.query_to_rawquery(query_str)))
     files = lch.execute_query(query_str, root = self.config.get('DEFAULT', 'root'))
     self.tab.widget_list[1].virtual_flat(files, title='Search result') #1 is the search window
     self.show_search()
     self.log_command('Found {:d} files.'.format(len(files)))
-
-  def open_external(self, event):
-    files = self.tab.active_widget.file_selection()#Only returns files
-    if len(files): lch.quick_look_file([fi[0] for fi in files])
-
-  def reveal_in_finder(self):
-    files_folders = self.tab.active_widget.all_selection()#Returns both files and folders
-    if len(files_folders): lch.reveal_file_in_finder([fi[0] for fi in files_folders])
-
-  def add_selected_to_pile(self):
-    files = self.tab.active_widget.file_selection()#Only returns files
-    l0 = len(self.pile)
-    for f in files:
-      self.pile.add(f[0])
-    l1 = len(self.pile)
-    self.log_command('Added {:d} files to pile.'.format(l1-l0))
-
-  def remove_selected_from_pile(self):
-    files = self.tab.active_widget.file_selection()#Only returns files
-    l0 = len(self.pile)
-    for f in files:
-      self.pile.discard(f[0])
-    l1 = len(self.pile)
-    self.log_command('Removed {:d} files from pile.'.format(l0-l1))
-
-  def clear_pile(self):
-    self.pile.clear()
-    self.log_command('Pile cleared')
-
-  def show_pile(self):
-    self.tab.widget_list[2].virtual_flat(self.pile, title='Showing pile.')
-    self.tab.set_active_widget(2)
-    self.selection_changed()
-    self.log_command('Picture pile')
-
-  def show_browser(self):
-    self.tab.set_active_widget(0)
-    self.selection_changed()
-    self.log_command('File browser')
-
-  def show_search(self):
-    self.tab.set_active_widget(1)
-    self.selection_changed()
-    self.log_command('Search results')
-
-  def resize_and_show(self, size):
-    size = (int(size[0]), int(size[1]))
-    out_dir = tempfile.mkdtemp()
-    for n,file in enumerate(self.pile):
-      outfile = join(out_dir, '{:06d}.jpg'.format(n))
-      im = Image.open(file)
-      im.thumbnail(size, Image.ANTIALIAS)
-      im.save(outfile, 'JPEG')
-    lch.reveal_file_in_finder([out_dir])
 
   def show_help(self):
     top = tki.Toplevel()
