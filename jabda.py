@@ -1,32 +1,40 @@
 """
 Jabda is a simple personal diary program. I am encouraged to write a diary if I can make entries quickly. I had Jabda as a bottle application using a browser as the GUI and that worked fine, but the program was not as responsive as I wanted. Jabda is now a very simple TKinter application running off a sqlite backend.
 
----------------------
-|     |             |
-|     |             |
-|  A  |      B      |
-|     |             |
-|     |             |
----------------------
+---------------------------------
+|           |  B  |             |
+|           |-----|             |
+|     A     |     |      D      |
+|           |  C  |             |
+|           |     |             |
+---------------------------------
 
-A - list box that lets us flip through our entries/search results
-B - reading/writing pane.
+A is the
+A is the search window that allows us to restrict the entries shown in a variety of ways
+B is a list box of entries that we can scroll through
+C is the date panel, showing the date of the entry
+D is the reading/editing panel
 
-New entry   -  Press 'n'. The B window will clear, allowing you to create your entry.
-               Press <CMD> (<ctrl>) + <s> to save the entry. ESC to cancel
-               Pane A is inactive during editing
+(On Linux and Windows use <CTRL> instead of <CMD>)
 
-Edit entry  -  Just edit the text in box B.
-               Press <CMD> (<ctrl>) + <s> to save. ESC to cancel
-               Pane A is inactive during editing
+editing    - simply click on an entry and modify the contents.
+<CMD> + s  - same modified /new entry
+<ESC>      - cancel edit
 
-You can not quit in the middle of an edit. You need to save or hit ESC to cancel, before quitting
+When in the command bar (A) (Hit <enter> to execute)
 
-Select database - Press 'd'.
-Create database - Press 'c'.
+n          -  scroll to 'now' entry and prepare for a new entry
+s <term>   -  search for given term
+d YYYY     -  return all entries in given year
+d YYYYMM   -  return all entries in given year/month
+d YYYYMMDD -  return all entries in given year/month/day
+s          -  clear search
 
-Search      -  Press 's'. The B window will clear. Type your term and press <CMD> + <s>
-Exit search -  Press 'x'
+new db     - open dialog box to create a new database file
+change db  - open dialog box to change the database
+
+When in edit mode, all operations are disabled
+
 """
 
 import logging
@@ -60,15 +68,25 @@ class App(object):
     self.current_entry_id = None
 
   def setup_window(self):
-    self.listbox = tki.Listbox(self.root, selectmode=tki.BROWSE,
+    f1 = tki.Frame(self.root)
+    f1.pack(side='left',fill='x')
+    f2 = tki.Frame(self.root)
+    f2.pack(side='left',fill='x')
+
+    self.cmd_win = tki.Entry(f1, width=13)
+    self.cmd_win.pack(side='top',fill='x')
+    self.listbox = tki.Listbox(f1, selectmode=tki.BROWSE,
                                selectbackground='black', selectforeground='white',
-                               selectborderwidth=0, width=13, bd=5, highlightthickness=0)
+                               selectborderwidth=0, width=13, bd=0, highlightthickness=0)
     self.listbox.pack(side='left', fill='y')
     self.listbox.bind('<<ListboxSelect>>', self.selection_changed)
     self.listbox.bind("<Key>", self.cmd_key_trap)
 
+
+#    self.
     self.edit_win = tki.Text(self.root, undo=True, width=50, height=12,
-                             fg='white', bg='black', insertbackground='white', highlightthickness=0, wrap=tki.WORD)
+                             font=('Helvetica',13),
+                             fg='black', bg='white', insertbackground='black', highlightthickness=0, wrap=tki.WORD)
     self.edit_win.pack(side='right', expand=True, fill='both')
     self.edit_win.bind('<<Modified>>', self.start_editing)
     #We set this rightaway because we want to be able to start a new entry by just typing in the empty box
